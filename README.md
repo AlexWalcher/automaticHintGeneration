@@ -20,7 +20,7 @@ It does achieve this by retrieving data from Wikidata and Wikipedia, therefor th
 ### **Added/planned features:**
 
 - create a **App or Webapp** for easy and future use of the software
-- rewrite/modify the **backlinks calculations** (use [Pageviews Analysis Website](https://pageviews.wmcloud.org/pageviews/url_structure/)) instead of calculating them by hand
+- rewrite/modify the **backlinks calculations** (use [Pageviews Analysis Website](https://pageviews.wmcloud.org/pageviews/url_structure/) or [Pageviews Analysis Git](https://github.com/MusikAnimal/pageviews)) instead of calculating them by hand
 - optimize and adjust the qrank and utility score 
 - introduce a improved category ranking further based on popularity
 - introduce a **difficulty setting** that refers to the difficulty of a generated hint (weak-, medium-, strong- hint)
