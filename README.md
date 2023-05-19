@@ -6,8 +6,7 @@ This project is part of my ongoing **Bachelor Thesis** at the **University of In
 [*Adam Jatowt and Alex Walcher: Automatic hint generation using Wikipedia*](https://ds-informatik.uibk.ac.at/doku.php?id=current_topics)
 
 ### **Goals:**
-A user should be able to insert questions with the correct answers and the corresponding types of questions(<question, answer, type> pairs).
-Then the program returns a file with automatically generated hints. The input should be possbile manually or by uploading a *.xlsx file*. 
+A user should be able to insert questions with the correct answers and the corresponding types of questions. (<question, answer, type> - pairs) Then the program returns a file with automatically generated hints. The input should be possbile manually or by uploading a *.xlsx file*. 
 
 This program should be able to handle three general types of questions: 
 
@@ -22,7 +21,7 @@ It does achieve this by retrieving data from Wikidata and Wikipedia, therefor th
 
 - create a **App or Webapp** for easy and future use of the software
 - add pools of popular events for years questions
-- add new approaches to find important pieces of information for aears questions
+- add new approaches to find important pieces of information for years questions
 - optimize and adjust the qrank and utility score 
 - introduce a **difficulty setting** that refers to the difficulty of a generated hint (weak-, medium-, strong- hint)
 - introduce a **"obviousness" metric** to understand if the generated hint is too strong/good and gives away the answer to easy
