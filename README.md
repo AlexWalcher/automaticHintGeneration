@@ -2,9 +2,8 @@
 
 **Ongoing project: At the moment the program is extended and updated constantly.**
 
-This project is part of my ongoing **Bachelor Thesis** of the **University of Innsbruck**: 
+This project is part of my ongoing **Bachelor Thesis** at the **University of Innsbruck**: 
 [*Adam Jatowt and Alex Walcher: Automatic hint generation using Wikipedia*](https://ds-informatik.uibk.ac.at/doku.php?id=current_topics)
-
 
 ### **Goals:**
 A user should be able to insert questions with the correct answers and the corresponding types of questions(<question, answer, type> pairs).
