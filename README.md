@@ -1,4 +1,4 @@
-# optimizationOfHintGeneration 
+# Automatic hint generation using Wikipedia
 
 **Ongoing project: At the moment the program is extended and updated constantly.**
 
