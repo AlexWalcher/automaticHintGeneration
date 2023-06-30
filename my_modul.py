@@ -8,66 +8,95 @@
 # !git clone https://github.com/AlexWalcher/automaticHintGeneration.git
 # %cd /content/
 
-# !pip install selenium
-# !apt-get update
-# !apt-get install firefox
-# !apt install firefox-geckodriver
-# !pip install sparqlwrapper
-# !pip install pageviewapi
-# !pip install sentence-transformers
-# !pip install wikipedia
-# !pip install requests
 
-# #new imports
-# import random
-# import spacy
-# import time
-# import requests
-# import re
-# import difflib
-# import pprint
-# import itertools
-# import wikipedia
-# # import wikipediaapi
-# !pip install lxml
-# #import xml.etree.ElementTree as ET
-# import lxml.etree as ET
-# import xml.etree.ElementTree as ET
-# import urllib.request
+import subprocess
+import sys
 
-# import pandas as pd
-# pd.set_option('display.max_colwidth',1000)
-# from SPARQLWrapper import SPARQLWrapper, JSON
-# sparql = SPARQLWrapper("https://query.wikidata.org/sparql")
-# import bs4
-# from bs4 import BeautifulSoup, NavigableString, Tag
-# from sentence_transformers import SentenceTransformer
-# from sklearn.metrics.pairwise import cosine_similarity
-# #!pip install -U pip setuptools wheel
-# #!pip install -U spacy
-# #!python -m spacy download en_core_web_sm
-# #!python -m spacy link en_core_web_sm en
-# from selenium import webdriver
-# from bs4 import BeautifulSoup
-# from urllib.parse import urlparse, parse_qs
-# from collections import OrderedDict
-# from sklearn.feature_extraction.text import TfidfVectorizer
-# from sklearn.metrics.pairwise import cosine_similarity
-# #from collections import OrderedDict
-# import collections.abc as collections
-# from collections.abc import Mapping
-# #from collections import Mapping
-# 
-# !pip install git+https://github.com/Commonists/pageview-api.git
-# !pip install pageviewapi
-# 
-# #import pageviewapi
-# !pip install Wikipedia-API
-# import wikipediaapi
-# !pip install wikidata
-# import wikidata
+from subprocess import STDOUT, check_call
+import os
 
+def install(package):
+    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+
+def apt_install(package):
+    check_call(['apt-get', 'install', '-y', package], stdout=open(os.devnull,'wb'), stderr=STDOUT) 
+
+
+# %mkdir tmp
+# %cd /content/
+# %rm -r automaticHintGeneration
+# !git clone https://github.com/AlexWalcher/automaticHintGeneration.git
+# %cd /content/
+
+# install('gitpython')
+# from git import Repo
+# git_url = 'https://github.com/AlexWalcher/automaticHintGeneration.git'
+# repo_dir = '/content/automaticHintGeneration'
+# Repo.clone_from(git_url, repo_dir)
+
+# Directory
+directory = "tmp"
+# Parent Directory path
+parent_dir = "/automaticHintGeneration"
+# Path
+path = os.path.join(parent_dir, directory)
+
+install('selenium')
+# apt_install('update')
+apt_install('firefox')
+apt_install('firefox-geckodriver')
+install('sparqlwrapper')
+install('pageviewapi')
+install('sentence-transformers')
+install('wikipedia')
+install('requests')
+install('lxml')
+# install('git+https://github.com/Commonists/pageview-api.git')
+install('pageviewapi')
+install('Wikipedia-API')
+install('wikidata')
+
+#new imports
+import random
+import spacy
+import time
+import requests
+import re
+import difflib
+import pprint
+import itertools
+import wikipedia
+import lxml.etree as ET
+import xml.etree.ElementTree as ET
+import urllib.request
 import pandas as pd
+pd.set_option('display.max_colwidth',1000)
+from SPARQLWrapper import SPARQLWrapper, JSON
+sparql = SPARQLWrapper("https://query.wikidata.org/sparql")
+import bs4
+from bs4 import BeautifulSoup, NavigableString, Tag
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+from selenium import webdriver
+from bs4 import BeautifulSoup
+from urllib.parse import urlparse, parse_qs
+from collections import OrderedDict
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+import collections.abc as collections
+from collections.abc import Mapping
+import wikipediaapi
+import wikidata
+import pandas as pd
+
+#Streamlit imports:
+install('streamlit')
+install('streamlit-option-menu')
+install('localtunnel')
+#!pip install -q streamlit
+from pathlib import Path
+
+
 
 def load_file_path(file_path):
   #file_path = "./automaticHintGeneration/testSet.xlsx"
@@ -98,7 +127,8 @@ def load_file_path(file_path):
   return df_list
 
 #file_path = "./tmp/testSet_WebApp.xlsx"
-file_path = "./automaticHintGeneration/testSet.xlsx"
+# file_path = "./automaticHintGeneration/testSet.xlsx"
+file_path = "testSet.xlsx"
 df_list = load_file_path(file_path)
 person_df = df_list["person"]
 year_df = df_list["year"]
@@ -834,7 +864,8 @@ Returns: str: The retrieved historical information as a xml file is saved and co
 """
 def retrieve_historical_information(start_date, end_date):
   url = f"https://www.vizgr.org/historical-events/search.php?format=xml&begin_date={start_date.replace('/', '')}&end_date={end_date.replace('/', '')}"
-  filename = "./automaticHintGeneration/vizgr_events.xml"
+  # filename = "./automaticHintGeneration/vizgr_events.xml"
+  filename = "vizgr_events.xml"
   saved_file = download_xml_file(url, filename)
   result = parse_xml_file(saved_file)
 
@@ -3074,6 +3105,18 @@ def generate_hints_from_xlsx(file_path):
   return generated_hint_sentences
 
 
+import pandas as pd
+
+def save_file():
+  # Read the Excel file into a DataFrame
+  df = pd.read_excel("./tmp/testSet_WebApp.xlsx")
+  # Drop the first column by positional index
+  df = df.iloc[:, 1:]
+  # Write the updated DataFrame back to the Excel file
+  df.to_excel('"./tmp/testSet_WebApp.xlsx"', index=False)
+
+  return True
+
 #takes ca 1:20h for 3 people, 2 years, 2 locations
 #file_path = "./automaticHintGeneration/testSet.xlsx"
 # file_path = "./tmp/testSet_WebApp.xlsx"
@@ -3154,36 +3197,38 @@ def generate_hints_from_xlsx(file_path):
 ## Streamlit installation
 """
 
-pip install -q streamlit
-pip install streamlit-option-menu
-import streamlit.components.v1 as html
-from  PIL import Image
-import numpy as np
-import cv2
-import pandas as pd
-# from st_aggrid import AgGrid
-# import plotly.express as px
-# import io
-npm install localtunnel
+# install('streamlit')
 
-from pathlib import Path
+# pip install -q streamlit
+# pip install streamlit-option-menu
+# import streamlit.components.v1 as html
+# from  PIL import Image
+# import numpy as np
+# import cv2
+# import pandas as pd
+# # from st_aggrid import AgGrid
+# # import plotly.express as px
+# # import io
+# npm install localtunnel
 
-"""## WebApp creation"""
+# from pathlib import Path
 
-import pandas as pd
+# """## WebApp creation"""
 
-def save_file():
+# import pandas as pd
 
-  # Read the Excel file into a DataFrame
-  df = pd.read_excel("./tmp/testSet_WebApp.xlsx")
+# def save_file():
 
-  # Drop the first column by positional index
-  df = df.iloc[:, 1:]
+#   # Read the Excel file into a DataFrame
+#   df = pd.read_excel("./tmp/testSet_WebApp.xlsx")
 
-  # Write the updated DataFrame back to the Excel file
-  df.to_excel('"./tmp/testSet_WebApp.xlsx"', index=False)
+#   # Drop the first column by positional index
+#   df = df.iloc[:, 1:]
 
-  return True
+#   # Write the updated DataFrame back to the Excel file
+#   df.to_excel('"./tmp/testSet_WebApp.xlsx"', index=False)
+
+#   return True
 
 
 # #this cell was reused from the old prediction methods
