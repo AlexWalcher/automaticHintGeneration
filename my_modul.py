@@ -93,6 +93,10 @@ import pandas as pd
 install('streamlit')
 install('streamlit-option-menu')
 #install('localtunnel')
+import streamlit as st
+from streamlit_option_menu import option_menu
+from pathlib import Path
+
 import subprocess
 subprocess.call(["npm","init"])
 subprocess.call(["npm","install"])
