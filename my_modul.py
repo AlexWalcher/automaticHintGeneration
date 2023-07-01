@@ -1,14 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# %cd /content/
-# %mkdir tmp
-
-# %cd /content/
-# %rm -r automaticHintGeneration
-# !git clone https://github.com/AlexWalcher/automaticHintGeneration.git
-# %cd /content/
-
-
 import subprocess
 import sys
 
@@ -88,15 +79,30 @@ from collections.abc import Mapping
 import wikipediaapi
 import wikidata
 import pandas as pd
+import torch
+from transformers import AutoTokenizer, AutoModel
+from collections import OrderedDict
+
+#install('localtunnel')
+
+from pathlib import Path
+import subprocess
+subprocess.call(["npm","init"])
+subprocess.call(["npm","install"])
+
+#subprocess.check_call([sys.executable, "-m", "npm", "install", 'localtunnel'])
+#!pip install -q streamlit
+# from pathlib import Path
 
 #Streamlit imports:
 install('streamlit')
 install('streamlit-option-menu')
-install('localtunnel')
-#!pip install -q streamlit
-from pathlib import Path
+import streamlit as st
+from streamlit_option_menu import option_menu
 
-
+print("\n")
+print("finished imports")
+print("\n")
 
 def load_file_path(file_path):
   #file_path = "./automaticHintGeneration/testSet.xlsx"
@@ -153,10 +159,7 @@ def get_table_info(url):
     headers = [header.text.strip() for header in rows[0].find_all('th')]
     data = []
   except Exception as e:
-    # Exception handling code
     pass
-    #print(f"An exception occurred: {e}")
-
   for row in rows[1:]:
       data.append([cell.text.strip() for cell in row.find_all('td')])
   return (headers, data)
@@ -294,7 +297,6 @@ def add_combined_strings_to_url(base_url, combined_strings):
     url_list.append(base_url + '/' + string)
   return url_list
 
-
 """
 This will output a list of all the sentences in the thumbcaption, split by ';'.
 """
@@ -302,13 +304,10 @@ def get_thumbcaption_sentences(url):
   # Get the HTML content of the page
   page = requests.get(url)
   soup = BeautifulSoup(page.content, 'html.parser')
-
   # Find the thumbcaption element
   thumbcaption = soup.find('div', class_='thumbcaption')
-
   # Get all the sentences in the thumbcaption
   sentences = thumbcaption.text.split('; ')
-
   return sentences
 
 """
@@ -368,7 +367,6 @@ def remove_keyword(sentences, keyword):
 """
 This function takes a list of sentences and a list of keyword, removes the keyword from each sentence in the list, and returns the updated list. MAYBE NOT WORKING
     Removes one or more keywords from each sentence in the list of sentences.
-
 """
 def remove_keywords(sentences, keywords):
   result = sentences
@@ -399,7 +397,6 @@ def remove_similar(sentences):
       new_sentences.append(sentence)
   return new_sentences
 
-#IMPORTANT
 """
 Calls the wiki years page, retrieve the thumbcaption part and rewrites it to become sentences. Return those sentences as hints.
 Args: years_list (list): The years we want the thumbcaption hints from.
@@ -420,12 +417,9 @@ def thumbcaption_hints_per_year(years_list):
     pruned = prune_links(thumbcaption_val) #prune those backlinks such that only the important part remains
     com = combine_first_elements(pruned) #combine up to 10 of these links to create a request to pageview
     url_list = add_combined_strings_to_url(pageviews_range_url, com) #now we have a list of pageview links with all the backlinks of the thumbcaption part of the wiki page
-    #print("URL")
-    #print(url_list)
     data=combine_dicts_from_links(url_list) #now we called the links and retreieved the pageviews; saved them as a dictionary
     ord = sort_dict_desc(data) #now the list is ordered in ascending order
     tmp = find_sentences(ord,sentences_of_thumbcaption) #search the corresponding sentence to the keyword (USA and school shooting for example)
-    #remove the years number from the hints OBVIOUSNESS
     keywords_list = [years_key, 'clockwise ', 'Clockwise ', 'From top left', 'from top-left', 'from top left', 'From top-left', 'from top-left: ', ':', 'from left, clockwise'] #list of keywords that should be removed from the sentences
     t4=remove_keywords(tmp, keywords_list)
     prepend_str = 'In the same year, '
@@ -435,7 +429,6 @@ def thumbcaption_hints_per_year(years_list):
     thumbcaption_hints[y] = final_hints
 
   return thumbcaption_hints
-
 
 """
 Calls the thumbcaption_hints_per_year function for every year and combines those into a dict.
@@ -450,7 +443,6 @@ def get_year_thumbcaption_hints(qa_dict):
   pop_thumb_hints = thumbcaption_hints_per_year(file_years_list)
   return pop_thumb_hints
 
-#get_year_thumbcaption_hints()
 
 """### Dictionary for popular sports events of a year"""
 
@@ -793,9 +785,6 @@ def get_year_sports_hints(qa_dict):
 
   return pop_sport_hints
 
-
-import torch
-from transformers import AutoTokenizer, AutoModel
 
 # Load pre-trained model and tokenizer
 model_name = 'bert-base-uncased'
@@ -1371,9 +1360,6 @@ def get_dict_for_every_location(cat_ranking, cat_with_pv):
         ret[location] = tmp
   return ret
 
-import wikipediaapi
-#import pageviewapi
-
 def get_categories(subject_dict):
   categories_for_subject_dict= {}
   rankings_for_categories_dict = {}
@@ -1427,7 +1413,7 @@ def sorting_dict(sor_dict):
     #sorted_dict = dict(sorted(value.items(), key=lambda x: x[2], reverse=True))
   return ret
 
-from collections import OrderedDict
+
 # function that takes a dictionary with an ordered dictionary as the value and prunes the ordered dictionary to keep only the first n entries:
 def prune_ordered_dict(dictionary, n):
   pruned_dict = OrderedDict()
@@ -1495,8 +1481,8 @@ template_sentence_location2 = 'The location you are looking for, belongs to the 
 template_sentence_person = 'The person you are looking for, is a member of the category x'
 template_sentence_person2 = 'The person you are looking for, belongs to the category '
 
-import itertools
-import requests
+
+
 
 def get_categories_with_pageviews_person(person_questions_dict):
   cat_ranking_person = get_categories(person_questions_dict)
@@ -1676,8 +1662,7 @@ def get_categories_with_ranking(person_questions_dict):
 
 #all_people_cat_ranked = get_categories_with_ranking() #copy_new_ordered_dict_person
 
-import wikipediaapi
-import requests
+
 
 #given a name, retrieve the infomration in the short-description part of the wiki page
 def get_page_short_description(page_title):
@@ -3105,7 +3090,6 @@ def generate_hints_from_xlsx(file_path):
   return generated_hint_sentences
 
 
-import pandas as pd
 
 def save_file():
   # Read the Excel file into a DataFrame
