@@ -74,29 +74,6 @@ install('streamlit-option-menu')
 import streamlit as st
 from streamlit_option_menu import option_menu
 
-def load_file_path(file_path):
-  #file_path = "./automaticHintGeneration/testSet.xlsx"
-  df = pd.ExcelFile(file_path).parse("Sheet1")
-  dataPerson = []
-  dataYear = []
-  dataLocation = []
-  df_list = {}
-  for index, row in df.iterrows():
-    if(row["Category"] == "Person"):
-      dataPerson.append([row["Question"], row["Answer"]])
-    elif(row["Category"] == "Year"):
-      dataYear.append([row["Question"], row["Answer"]])
-    elif(row["Category"] == "Location"):
-      dataLocation.append([row["Question"], row["Answer"]])
-  person_df = pd.DataFrame(dataPerson, columns=["Question", "Answer"])
-  year_df = pd.DataFrame(dataYear, columns=["Question", "Answer"])
-  location_df = pd.DataFrame(dataLocation, columns=["Question", "Answer"])
-  df_list["person"] = person_df
-  df_list["year"] = year_df
-  df_list["location"] =location_df
-  pprint.pprint(df_list, indent=1)
-  return df_list
-
 
 print("\n")
 print("finished imports")
