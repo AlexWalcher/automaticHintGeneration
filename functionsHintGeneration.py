@@ -76,14 +76,6 @@ install('streamlit-option-menu')
 import streamlit as st
 from streamlit_option_menu import option_menu
 
-#location
-file_path = "testSet.xlsx"
-df_list = load_file_path(file_path)
-person_df = df_list["person"]
-year_df = df_list["year"]
-location_df = df_list["location"]
-
-template_sentence_location_list = ['The location you are looking for is/was a member of category 1.']
 
 import pandas as pd
 import pprint
@@ -113,6 +105,15 @@ def load_file_path(file_path):
   df_list["location"] =location_df
   pprint.pprint(df_list, indent=1)
   return df_list
+
+#location
+file_path = "testSet.xlsx"
+df_list = load_file_path(file_path)
+person_df = df_list["person"]
+year_df = df_list["year"]
+location_df = df_list["location"]
+
+template_sentence_location_list = ['The location you are looking for is/was a member of category 1.']
 
 
 # #from years
