@@ -1,17 +1,22 @@
 # -*- coding: utf-8 -*-
+"""
+File that contains all requirements (imports) that are needed for the automaticHintGeneration app
+"""
 
 import subprocess
 import sys
 from subprocess import STDOUT, check_call
 import os
 
+#function that allows us to install pip packages via a python file 
 def install(package):
     subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+#function that allows us to install apt-get packages via a python file 
 def apt_install(package):
     check_call(['apt-get', 'install', '-y', package], stdout=open(os.devnull,'wb'), stderr=STDOUT)
 
 directory = "tmp" # Directory
-parent_dir = "/automaticHintGeneration" # Parent Directory path
+parent_dir = "/content/automaticHintGeneration" # Parent Directory path
 path = os.path.join(parent_dir, directory) # Path
 
 install('selenium')
@@ -37,6 +42,8 @@ import difflib
 import pprint
 import itertools
 import wikipedia
+import wikipediaapi
+import wikidata
 import lxml.etree as ET
 import xml.etree.ElementTree as ET
 import urllib.request
@@ -52,16 +59,12 @@ from selenium import webdriver
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse, parse_qs
 from collections import OrderedDict
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
 import collections.abc as collections
 from collections.abc import Mapping
-import wikipediaapi
-import wikidata
-import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 import torch
 from transformers import AutoTokenizer, AutoModel
-from collections import OrderedDict
 
 from pathlib import Path
 import subprocess
@@ -73,7 +76,6 @@ install('streamlit')
 install('streamlit-option-menu')
 import streamlit as st
 from streamlit_option_menu import option_menu
-
 
 print("\n")
 print("finished imports")
