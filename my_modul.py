@@ -84,6 +84,23 @@ sys.path.insert(0, imports_path)
 
 from importsHintGeneration import *
 
+# from yearsFunctionsHintGeneration import *
+
+# from peopleFunctionsHintGeneration import *
+
+# from locationFunctionsHintGeneration import *
+
+from functionsHintGeneration import *
+
+# from generalFunctionsHintGeneration import *
+
+
+
+
+# from generalFunctionsHintGeneration import load_file_path
+
+
+
 # def load_file_path(file_path):
 #   #file_path = "./automaticHintGeneration/testSet.xlsx"
 #   df = pd.ExcelFile(file_path).parse("Sheet1")
@@ -115,11 +132,11 @@ person_df = df_list["person"]
 year_df = df_list["year"]
 location_df = df_list["location"]
 
-from yearsFunctionsHintGeneration import *
+# from yearsFunctionsHintGeneration import *
 
-from peopleFunctionsHintGeneration import *
+# from peopleFunctionsHintGeneration import *
 
-from locationFunctionsHintGeneration import *
+# from locationFunctionsHintGeneration import *
 
 """# **Generate hints - (putting everything together)**"""
 #Function that puts everything together
