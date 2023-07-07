@@ -26,15 +26,15 @@ def load_file_path(file_path):
   df_list["person"] = person_df
   df_list["year"] = year_df
   df_list["location"] =location_df
-  pprint.pprint(df_list, indent=1)
+  # pprint.pprint(df_list, indent=1)
   return df_list
 
 #location
-file_path = "/content/automaticHintGeneration/testSet.xlsx"
-df_list = load_file_path(file_path)
-person_df = df_list["person"]
-year_df = df_list["year"]
-location_df = df_list["location"]
+# file_path = "/content/automaticHintGeneration/testSet.xlsx"
+# df_list = load_file_path(file_path)
+# person_df = df_list["person"]
+# year_df = df_list["year"]
+# location_df = df_list["location"]
 
 template_sentence_location_list = ['The location you are looking for is/was a member of category 1.']
 
@@ -708,7 +708,8 @@ Args: title (str): The title of the Wikipedia page.
 Returns: categories (list): A list of categories associated with the page.
 """
 def get_wikipedia_categories(title):
-  wikipedia = wikipediaapi.Wikipedia("en")
+  #wikipedia = wikipediaapi.Wikipedia("en")
+  wikipedia = wikipediaapi.Wikipedia('automaticHintGeneration (alex@example.com)','en')
   page = wikipedia.page(title)
   if not page.exists():
     return []
@@ -1631,8 +1632,11 @@ def get_categories_of_people_list(people_list, limit=5):
     if len(related_people_orderd) == 0 or  len(top_most_popular_people) == 0:
       continue
     categories_of_related_people = get_categories(top_most_popular_people)
+    pprint.pprint(categories_of_related_people)
     categories_with_pageviews_person = get_pageviews_for_categories(categories_of_related_people)
     categories_with_subs_and_pageviews_person = get_dict_for_every_location(categories_of_related_people, categories_with_pageviews_person)
+    pprint.pprint(categories_with_subs_and_pageviews_person)
+
     new_ordered_dict_related_person = sorting_dict(categories_with_subs_and_pageviews_person)
     copy_new_ordered_dict_person_test = prune_and_ordered_dict(new_ordered_dict_related_person, 10)
     ordered_dict_related_person = sorting_dict(copy_new_ordered_dict_person_test)
