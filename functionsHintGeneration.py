@@ -2637,12 +2637,13 @@ Returns:  dict: A dictionary with the date as the key and the event descriptions
 """
 def get_year_vizgr_hints(qa_dict):
   file_years_list = []
+  final_hints = {}
+
   # for index, row in year_df.iterrows():
   for index, row in qa_dict.items():
     # print(index,row)
-    if int(index) < 2013:
+    if int(index) < 2012:
       file_years_list.append(int(index))
-  final_hints = {}
   for year in file_years_list:
     inter_start_date = str(year) + "0101"
     inter_end_date = str(year) + "1231"
@@ -2718,18 +2719,40 @@ Test for utility score of new questions; calculate score via BERT for each quest
 """
 def generate_hints_years(qa_dict):
   # print(qa_dict)
+  pop_year_hints = {}
+  pop_thumb_hints = {}
   pop_vizgr_hints = {}
+
 
   pop_year_hints = get_year_sports_hints(qa_dict)
   pop_thumb_hints = get_year_thumbcaption_hints(qa_dict)
   pop_vizgr_hints = get_year_vizgr_hints(qa_dict)
   years_hints = {}
+
+  
+  # year_dict = {
+  #   'sports': years_hints,
+  #   'thumbcaption':years_hints,
+  #   'vizgr' : years_hints
+  # }
+
   for y in pop_year_hints:
-    year_dict = {
-        'sports': pop_year_hints[y],
-        'thumbcaption': pop_thumb_hints[y],
-        'vizgr' : pop_vizgr_hints[y]
-    }
+    year_dict= {}
+    try:
+      # year_dict = {
+      #     'sports': pop_year_hints[y],
+      #     'thumbcaption': pop_thumb_hints[y],
+      #     'vizgr' : pop_vizgr_hints[y]
+      # }
+      if pop_year_hints[y]:
+        year_dict['sports'] = pop_year_hints[y]
+      if pop_thumb_hints[y]:
+        year_dict['thumbcaption'] = pop_thumb_hints[y]
+      if pop_vizgr_hints[y]:
+        year_dict['sports'] = pop_vizgr_hints[y]
+    except Exception as e:
+      print(e)
+      pass
     years_hints[y] = year_dict
   generated_hints_for_years = years_hints
   sim_scores = years_hints
