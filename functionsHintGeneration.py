@@ -2602,7 +2602,8 @@ Returns: str: The retrieved historical information as a xml file is saved and co
 """
 def retrieve_historical_information(start_date, end_date):
   url = f"https://www.vizgr.org/historical-events/search.php?format=xml&begin_date={start_date.replace('/', '')}&end_date={end_date.replace('/', '')}"
-  # filename = "./automaticHintGeneration/vizgr_events.xml"
+  #https://www.vizgr.org/historical-events/search.php?format=xml&begin_date=20120101&end_date=201231
+  # filename = "/content/automaticHintGeneration/vizgr_events.xml"
   filename = "vizgr_events.xml"
   saved_file = download_xml_file(url, filename)
   result = parse_xml_file(saved_file)
@@ -2639,7 +2640,7 @@ def get_year_vizgr_hints(qa_dict):
   # for index, row in year_df.iterrows():
   for index, row in qa_dict.items():
     # print(index,row)
-    if int(index) < 2014:
+    if int(index) < 2013:
       file_years_list.append(int(index))
   final_hints = {}
   for year in file_years_list:
@@ -2717,6 +2718,7 @@ Test for utility score of new questions; calculate score via BERT for each quest
 """
 def generate_hints_years(qa_dict):
   # print(qa_dict)
+  pop_vizgr_hints = {}
 
   pop_year_hints = get_year_sports_hints(qa_dict)
   pop_thumb_hints = get_year_thumbcaption_hints(qa_dict)
