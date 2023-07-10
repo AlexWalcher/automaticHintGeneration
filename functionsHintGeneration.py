@@ -2203,7 +2203,7 @@ def get_year_thumbcaption_hints(qa_dict):
   file_years_list = []
   # for index, row in year_df.iterrows():
   for index, row in qa_dict.items():
-    file_years_list.append(index)
+    file_years_list.append(int(index))
   pop_thumb_hints = thumbcaption_hints_per_year(file_years_list)
   return pop_thumb_hints
 
@@ -2411,8 +2411,13 @@ returns a dict with the corresponding sports events from the years in years_list
 '''
 def popular_sports_per_year(years_list):
   pop_sport_hints_year = {}
+  # pprint.pprint(years_list)
+  # print(years_list)
+  # print("hallo")
+
   for index in years_list:
-    year = index
+    # pprint.pprint(index)
+    year = int(index)
     year_s = str(year)
     year_dict = {
         'cl': '', 'p_cl': '', 'f_cl': '',
@@ -2420,8 +2425,11 @@ def popular_sports_per_year(years_list):
         'worlds': '', 'p_worlds': '', 'f_worlds': '',
         'f1': '', 'p_f1': '', 'f_f1': '',
         'summer': '', 'p_summer': '', 'f_summer': '',
-        'winter': '', 'p_winter': '', 'f_winter': '',
-        }
+        'winter': '', 'p_winter': '', 'f_winter': ''
+    }
+    # print("hallo")
+    # print(year, type(year))
+    # print(index, type(index))
   # UEFA Champions League: Create the sentences like (In the same-, the following-, the previous-year)
     for key in cl_all:
       if int(key.split('-')[1]) == year % 100:
@@ -2520,8 +2528,11 @@ def popular_sports_per_year(years_list):
 def get_year_sports_hints(qa_dict):
   file_years_list = []
   # for index, row in year_df.iterrows():
+  # for index, row in qa_dict.items():
+  #   print(index, row)
+
   for index, row in qa_dict.items():
-    file_years_list.append(index)
+    file_years_list.append(int(index))
   pop_sport_hints = popular_sports_per_year(file_years_list)
   return pop_sport_hints
 
@@ -2628,8 +2639,8 @@ def get_year_vizgr_hints(qa_dict):
   # for index, row in year_df.iterrows():
   for index, row in qa_dict.items():
     # print(index,row)
-    if index < 2014:
-      file_years_list.append(index)
+    if int(index) < 2014:
+      file_years_list.append(int(index))
   final_hints = {}
   for year in file_years_list:
     inter_start_date = str(year) + "0101"
@@ -2705,6 +2716,8 @@ Returns:  dict: A dictionary with the date as the key and the description up unt
 Test for utility score of new questions; calculate score via BERT for each question,hint pair and write the score together with the question into the sim_scores dictionary.
 """
 def generate_hints_years(qa_dict):
+  # print(qa_dict)
+
   pop_year_hints = get_year_sports_hints(qa_dict)
   pop_thumb_hints = get_year_thumbcaption_hints(qa_dict)
   pop_vizgr_hints = get_year_vizgr_hints(qa_dict)

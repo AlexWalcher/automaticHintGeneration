@@ -37,14 +37,17 @@ elif selected == "Upload file":
 elif selected == "Year question":
     st.header('Enter the years-question with the answer and wait for the corresponding hint to be generated.')
     st.subheader('Input:')
-    with st.form(key="Form :", clear_on_submit = True):
+    with st.form(key="Year_Form :", clear_on_submit = True):
         Question=st.text_input(label='Please enter your question') #Collect user feedback
-        Answer=st.text_input(label='Please enter the corresponding answer') #Collect user feedback
+        #Answer=st.number_input(label='Please enter the corresponding answer') #Collect user feedback
+        Answer=st.number_input(label='Please enter the corresponding answer', min_value=0, max_value=2050, value=2022, format="%i") #Collect user feedback
+        year_as_txt = str(Answer)
+        Answer = int(2018)
         submitted = st.form_submit_button('Submit')
         if submitted:
             st.write('Thanks for your question, wait a moment until your hint is generated.')
             with open("/content/automaticHintGeneration/tmp/questionYear.txt", 'a') as writefile:
-                item = 'Question: ' + str(Question) + '; ' + 'Answer: ' + str(Answer)
+                item = 'Question: ' + str(Question) + '; ' + 'Answer: ' + year_as_txt
                 writefile.write(item + "\n")
                 writefile.close()
             with st.spinner('Wait for it...'):

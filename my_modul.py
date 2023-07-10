@@ -75,6 +75,8 @@ def read_properties_from_file(file_path):
   except FileNotFoundError:
     print(f"File not found at path: {file_path}")
   
+  print(question, answer)
+
   question = question.replace(";", "")
 
   return question, answer
@@ -86,13 +88,16 @@ def generate_hints_from_txt(file_path):
 
   question = inter[0]
   answer = inter[1]
+  print(question, answer)
 
   if "Year" in file_path:
     #generates the hints for the YEARS question
     # year_questions_dict = dict(zip(answer.item(), question.item()))
+    year_as_int = int(answer)
+    year_as_txt = str(answer)
     year_questions_dict = {}
-    year_questions_dict[answer] = question
-    pprint.pprint(year_questions_dict)
+    year_questions_dict[year_as_int] = question
+    # pprint.pprint(year_questions_dict)
     years_hints = generate_hints_years(year_questions_dict)
     generated_hint_sentences['years'] = years_hints
   elif "Location" in file_path:
