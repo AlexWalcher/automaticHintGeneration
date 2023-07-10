@@ -2640,7 +2640,7 @@ def get_year_vizgr_hints(qa_dict):
   # for index, row in year_df.iterrows():
   for index, row in qa_dict.items():
     # print(index,row)
-    if int(index) < 2013:
+    if int(index) < 2012:
       file_years_list.append(int(index))
   final_hints = {}
   for year in file_years_list:
