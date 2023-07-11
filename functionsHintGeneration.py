@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 File that contains the functions that are used througout the automaticHintGeneration program.
 Most of them are reused/shared between the different hint-types (years, people, locations)
@@ -365,8 +364,8 @@ def get_categories_with_pv_answerEntities_location(location_questions_dict):
 def create_hint_sentences_unexCategs_location(categories_scores_dict, location_answers_dict):
   most_unexpected_categories_dict = {}
   hint_sentence_unexCateg_dict = {}
-  print("categories_scores_dict")
-  pprint.pprint(categories_scores_dict,indent=1)
+  # print("categories_scores_dict")
+  # pprint.pprint(categories_scores_dict,indent=1)
   try:
     for key,value in categories_scores_dict.items():
       categories_scores_dict[key] = OrderedDict(sorted(value.items(), key=lambda x: x[1], reverse=True))
@@ -428,11 +427,11 @@ def get_location_hints_unexpected_categories(location_answers_dict):
   related_location_pageviews_dict = {}
   most_popular_related_location_with_categories = {}
   #time saving for first part (related locations recovery) 2m
-  pprint.pprint(location_answers_dict)
+  # pprint.pprint(location_answers_dict)
 
   for key,value in location_answers_dict.items():
     related_location_dict[key] = get_related_location_from_location_name(key)
-  pprint.pprint(related_location_dict)
+  # pprint.pprint(related_location_dict)
 
   #time saving for second part (related locations with pageviews and ordering) - 16m (6-7m)
   for key,value in related_location_dict.items():
@@ -441,10 +440,10 @@ def get_location_hints_unexpected_categories(location_answers_dict):
       inter_link_list.append(item['url'])
     related_location_link_dict[key] = inter_link_list
     related_location_pageviews_dict = get_pageviews_from_links(related_location_link_dict)
-  pprint.pprint(related_location_pageviews_dict)
+  # pprint.pprint(related_location_pageviews_dict)
   #time saving for third part (related locations categories recovery and ordering) - 43m+ (14m-24m)
   most_popular_related_location_with_categories = get_categories_of_people_list(related_location_pageviews_dict)
-  pprint.pprint(most_popular_related_location_with_categories)
+  # pprint.pprint(most_popular_related_location_with_categories)
 
   #time saving for third part retrieves the categories of the answer-entities - 9m+ (6m)
   answer_entities_with_categories_location = get_categories_with_pv_answerEntities_location(location_answers_dict)
@@ -467,7 +466,7 @@ def get_location_hints_unexpected_categories(location_answers_dict):
     categories_scores_dict_location[key] = OrderedDict(sorted(value.items(), key=lambda x: x[1], reverse=True))
   #create some sentences with the occupation and a unexpected category as hints
   mucd = create_hint_sentences_unexCategs_location(categories_scores_dict_location, location_answers_dict)
-  pprint.pprint(mucd,  sort_dicts=False)
+  # pprint.pprint(mucd,  sort_dicts=False)
   inter = {}
   for key, value in mucd.items():
     for answer,question in location_answers_dict.items():
@@ -1632,10 +1631,10 @@ def get_categories_of_people_list(people_list, limit=5):
     if len(related_people_orderd) == 0 or  len(top_most_popular_people) == 0:
       continue
     categories_of_related_people = get_categories(top_most_popular_people)
-    pprint.pprint(categories_of_related_people)
+    # pprint.pprint(categories_of_related_people)
     categories_with_pageviews_person = get_pageviews_for_categories(categories_of_related_people)
     categories_with_subs_and_pageviews_person = get_dict_for_every_location(categories_of_related_people, categories_with_pageviews_person)
-    pprint.pprint(categories_with_subs_and_pageviews_person)
+    # pprint.pprint(categories_with_subs_and_pageviews_person)
 
     new_ordered_dict_related_person = sorting_dict(categories_with_subs_and_pageviews_person)
     copy_new_ordered_dict_person_test = prune_and_ordered_dict(new_ordered_dict_related_person, 10)
@@ -2016,9 +2015,11 @@ def get_wikipedia_backlinks_thumbcaption(url):
   soup = BeautifulSoup(page_html, 'html.parser')
   # Find the image caption on the page
   caption = soup.find('div', class_='thumbcaption')
+  backlink_sentences = {}
+  backlinks = []
   if caption is not None:
     # Extract the caption text and any backlinks
-    backlink_sentences = {}
+    # backlink_sentences = {}
     sentences = caption.text.strip().split('.')
     for sentence in sentences:
       links = caption.find_all('a', href=True, string=re.compile(sentence))
@@ -2070,12 +2071,17 @@ This will output a list of all the sentences in the thumbcaption, split by ';'.
 """
 def get_thumbcaption_sentences(url):
   # Get the HTML content of the page
+  # pprint.pprint(url)
   page = requests.get(url)
   soup = BeautifulSoup(page.content, 'html.parser')
   # Find the thumbcaption element
   thumbcaption = soup.find('div', class_='thumbcaption')
   # Get all the sentences in the thumbcaption
-  sentences = thumbcaption.text.split('; ')
+  # print(thumbcaption)
+  try:
+    sentences = thumbcaption.text.split('; ')
+  except Exception as e:
+    print(e)
   return sentences
 
 """
@@ -2177,6 +2183,7 @@ def thumbcaption_hints_per_year(years_list):
   for y in years_list:
     years_key = str(y)
     test_link = wiki_base_link + years_key
+    # print(test_link)
     sentences_of_thumbcaption = get_thumbcaption_sentences(test_link) #just gets the sentences from the thumbcaption section of a wikipedi years page
     thumbcaption = get_wikipedia_backlinks_thumbcaption(test_link) #get all backlinks of the thumbcapture of the year (those are the most known events)
     thumbcaption_key = next(iter(thumbcaption))
@@ -2198,7 +2205,9 @@ def thumbcaption_hints_per_year(years_list):
 """
 Calls the thumbcaption_hints_per_year function for every year and combines those into a dict.
 Returns:  dict: A dictionary with the most popular events of a year retrieved from the thumbcaption part of a wiki years page.
+
 """
+
 def get_year_thumbcaption_hints(qa_dict):
   file_years_list = []
   # for index, row in year_df.iterrows():
@@ -2712,20 +2721,20 @@ def order_dictionary(my_dict):
     ret[year] = new_dict
   return ret
 
-"""
-Calls the three different function types of generating years hints, combines them into a single dict and calculate the similarity score between question and hint to rank them.
-Returns:  dict: A dictionary with the date as the key and the description up until the first dot as the value.
-Test for utility score of new questions; calculate score via BERT for each question,hint pair and write the score together with the question into the sim_scores dictionary.
-"""
+# """
+# Calls the three different function types of generating years hints, combines them into a single dict and calculate the similarity score between question and hint to rank them.
+# Returns:  dict: A dictionary with the date as the key and the description up until the first dot as the value.
+# Test for utility score of new questions; calculate score via BERT for each question,hint pair and write the score together with the question into the sim_scores dictionary.
+# """
 def generate_hints_years(qa_dict):
   # print(qa_dict)
   pop_year_hints = {}
-  pop_thumb_hints = {}
+  #pop_thumb_hints = {}
   pop_vizgr_hints = {}
 
 
   pop_year_hints = get_year_sports_hints(qa_dict)
-  pop_thumb_hints = get_year_thumbcaption_hints(qa_dict)
+  #pop_thumb_hints = get_year_thumbcaption_hints(qa_dict)
   pop_vizgr_hints = get_year_vizgr_hints(qa_dict)
   years_hints = {}
 
@@ -2746,8 +2755,8 @@ def generate_hints_years(qa_dict):
       # }
       if pop_year_hints[y]:
         year_dict['sports'] = pop_year_hints[y]
-      if pop_thumb_hints[y]:
-        year_dict['thumbcaption'] = pop_thumb_hints[y]
+      #if pop_thumb_hints[y]:
+      #  year_dict['thumbcaption'] = pop_thumb_hints[y]
       if pop_vizgr_hints[y]:
         year_dict['sports'] = pop_vizgr_hints[y]
     except Exception as e:
@@ -2765,11 +2774,11 @@ def generate_hints_years(qa_dict):
               sim_scores[year][category][key] = {}
               similarity_score = get_similarity_score(q,value)
               sim_scores[year][category][key][value] = similarity_score
-          elif category == 'thumbcaption':
-            for i in subdata:
-              sim_scores[year][category] = {}
-              similarity_score = get_similarity_score(q,i)
-              sim_scores[year][category][i] = similarity_score
+          # elif category == 'thumbcaption':
+          #   for i in subdata:
+          #     sim_scores[year][category] = {}
+          #     similarity_score = get_similarity_score(q,i)
+          #     sim_scores[year][category][i] = similarity_score
           elif category == 'vizgr':
             for key, value in subdata.items():
               sim_scores[year][category][key] = {}

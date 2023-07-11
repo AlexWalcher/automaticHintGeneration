@@ -1,4 +1,3 @@
-# # -*- coding: utf-8 -*-
 """
 File that contains the final hint generation functions where all of the one from the functionsHintGeneration file are orchestrated to work together.
 """
@@ -88,7 +87,7 @@ def generate_hints_from_txt(file_path):
 
   question = inter[0]
   answer = inter[1]
-  print(question, answer)
+  # print(question, answer)
 
   if "Year" in file_path:
     #generates the hints for the YEARS question
