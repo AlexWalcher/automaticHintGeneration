@@ -2758,7 +2758,7 @@ def generate_hints_years(qa_dict):
       #if pop_thumb_hints[y]:
       #  year_dict['thumbcaption'] = pop_thumb_hints[y]
       if pop_vizgr_hints[y]:
-        year_dict['sports'] = pop_vizgr_hints[y]
+        year_dict['vizgr'] = pop_vizgr_hints[y]
     except Exception as e:
       print(e)
       pass
