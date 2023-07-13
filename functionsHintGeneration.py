@@ -3,6 +3,7 @@ File that contains the functions that are used througout the automaticHintGenera
 Most of them are reused/shared between the different hint-types (years, people, locations)
 """
 
+from code import InteractiveInterpreter
 from importsHintGeneration import *
 
 def load_file_path(file_path):
@@ -467,6 +468,9 @@ def get_location_hints_unexpected_categories(location_answers_dict):
   #create some sentences with the occupation and a unexpected category as hints
   mucd = create_hint_sentences_unexCategs_location(categories_scores_dict_location, location_answers_dict)
   # pprint.pprint(mucd,  sort_dicts=False)
+  print('get_location_hints_unexpected_categories-mucd')
+  pprint.pprint(mucd)
+
   inter = {}
   for key, value in mucd.items():
     for answer,question in location_answers_dict.items():
@@ -558,8 +562,11 @@ def create_hint_sentences(location_answers_dict, locations_identifiers_dict, pro
               locations_identifiers_dict[propert] = e_list
             except Exception as e:
               pass
-      if propert == 'P1082':
-        locations_identifiers_dict[propert] = locations_identifiers_dict[propert]['amount']
+      try:
+        if propert == 'P1082':
+          locations_identifiers_dict[propert] = locations_identifiers_dict[propert]['amount']
+      except Exception as e:
+        print(e)
     #now lets choose wich one we use for the sentences (sometimes random for others specific ones)
     for prop, sentence in properties_blank_sentences_locations.items():
       for p, val in locations_identifiers_dict.items():
@@ -599,6 +606,8 @@ def get_ranking_forfixed_properties(counted_category_apperances):
     categories_scores_dict[key] = OrderedDict(sorted(value.items(), key=lambda x: x[1], reverse=True))
   #create some sentences with the occupation and a unexpected category as hints
   mucd = create_hint_sentences_unexCategs_location(categories_scores_dict, person_answers_dict)
+  print('get_ranking_forfixed_properties-mucd')
+  pprint.pprint(mucd)
   return mucd
 
 def get_location_hints_fixed_properties(location_answers_dict):
@@ -648,8 +657,11 @@ def get_location_hints_fixed_properties(location_answers_dict):
     for answer,question in location_answers_dict.items():
       if key == answer:
         for code, sentence in value.items():
-          sim_score = get_similarity_score(question,sentence)
-          inter[code]  = {sentence : sim_score}
+          if '*' in sentence:
+            continue
+          else:
+            sim_score = get_similarity_score(question,sentence)
+            inter[code]  = {sentence : sim_score}
         ret[key] = inter
   return ret
 
@@ -952,7 +964,7 @@ def prune_ordered_dict(dictionary, n):
 def prune_and_ordered_dict(dictionary, n):
   pruned_dict = OrderedDict()
   inter1_dict= OrderedDict()
-  bad_categories_list = ['Living_people', 'Living people', '_births', 'births', '_deaths', 'deaths', 'Good_articles', 'Good articles', 'Members','19th', '20th', '21st']
+  bad_categories_list = ['Living_people', 'Living people', '_births', 'births', '_deaths', 'deaths', 'Good_articles', 'Good articles', 'Members','19th', '20th', '21st', 'Capitals in Europe', 'state capitals']
   for key, value in dictionary.items():
     inter3_dict= OrderedDict()
     for link, tuplee in value.items():
@@ -1754,29 +1766,29 @@ Calculates the categories score from the category diversity (calculated by calcu
 Args:
 Returns:
 """
-def calculate_categories_score(counted_category_apperances, avg_diversity_from_IoU):
-  categories_scores_dict = {}
-  for key,value in counted_category_apperances.items():
-    inter_dict={}
-    for item in value.items():
-      link = item[0]
-      cat_popularity = item[1][1]
-      for name, cat_div in avg_diversity_from_IoU.items():
-        if name == key:
-          inter_dict[link] = cat_popularity * cat_div
-    categories_scores_dict[key] = inter_dict
-  ordered_dicter = {}
-  ordered_scores ={}
-  for k,v in categories_scores_dict.items():
-    ordered_scores[k] = OrderedDict(v)
-  for k,v in ordered_scores.items():
-    ordered_dicter[k] = OrderedDict(sorted(v.items(), key=lambda x: x[1], reverse=True))
-  #modify the scores to give some categories a lower one
-  for key,value in ordered_dicter.items():
-    for link, score in value.items():
-      if '20th' in link or '21st' in link:
-        value[link]  = score / 4
-  return ordered_dicter
+# def calculate_categories_score(counted_category_apperances, avg_diversity_from_IoU):
+#   categories_scores_dict = {}
+#   for key,value in counted_category_apperances.items():
+#     inter_dict={}
+#     for item in value.items():
+#       link = item[0]
+#       cat_popularity = item[1][1]
+#       for name, cat_div in avg_diversity_from_IoU.items():
+#         if name == key:
+#           inter_dict[link] = cat_popularity * cat_div
+#     categories_scores_dict[key] = inter_dict
+#   ordered_dicter = {}
+#   ordered_scores ={}
+#   for k,v in categories_scores_dict.items():
+#     ordered_scores[k] = OrderedDict(v)
+#   for k,v in ordered_scores.items():
+#     ordered_dicter[k] = OrderedDict(sorted(v.items(), key=lambda x: x[1], reverse=True))
+#   #modify the scores to give some categories a lower one
+#   for key,value in ordered_dicter.items():
+#     for link, score in value.items():
+#       if '20th' in link or '21st' in link:
+#         value[link]  = score / 4
+#   return ordered_dicter
 
 template_sentence_person_list = ['The person you are looking for is/was occupied as 0 and a member of the category 1.']
 
@@ -1840,6 +1852,8 @@ def get_person_hints_unexpected_categories(person_answers_dict):
   for key,value in categories_scores_dict.items():
     categories_scores_dict[key] = OrderedDict(sorted(value.items(), key=lambda x: x[1], reverse=True))
   mucd = create_hint_sentences_unexCategs(categories_scores_dict, person_answers_dict)
+  print('get_person_hints_unexpected_categories-mucd')
+  pprint.pprint(mucd)
   inter = {}
   for key, value in mucd.items():
     for answer,question in person_answers_dict.items():
@@ -1922,7 +1936,15 @@ def create_hint_sentences_predicates(properties_person_name_dict, properties_bla
       properties_sentences_dict['date of birth + place of birth'] = properties_blank_sentences['date of birth + place of birth'].replace('/', str(value['date of birth'][0])).replace('*', str(value['place of birth'][0]))
     if 'date of birth' in value and 'place of birth' in value and 'date of death' in value and 'place of death' in value:
       properties_sentences_dict['date of birth + place of birth + date of death + place of death'] = properties_blank_sentences['date of birth + place of birth + date of death + place of death'].replace('/', str(value['date of birth'][0])).replace('*', str(value['place of birth'][0])).replace('-', str(value['date of death'][0])).replace('+', str(value['place of death'][0]))
-    hint_sentence_dict[pers_name] = properties_sentences_dict
+    
+    inter = {}
+    for k,v in properties_sentences_dict.items():
+      if '*' not in v:
+        inter[k] = v
+
+    
+    # properties_sentences_dict = remove_sentences_with_asterisk(properties_sentences_dict)
+    hint_sentence_dict[pers_name] = inter
   return hint_sentence_dict
 
 def get_person_hints_unexpected_predicates(person_answers_dict):
@@ -2668,6 +2690,7 @@ def get_year_vizgr_hints(qa_dict):
           vizgr_hint_sentences[k] = 'In the same year, '+ v[1].lower() + v[2:] + '.'
         else:
           vizgr_hint_sentences[k] = 'In the same year, '+ v[0].lower() + v[1:] + '.'
+      vizgr_hint_sentences = remove_sentences_with_asterisk(vizgr_hint_sentences)
     final_hints[year] = vizgr_hint_sentences
   return final_hints
 
@@ -2798,3 +2821,38 @@ def generate_hints_years(qa_dict):
 # years_hints = generate_hints_years(qa_dict)
 # print("This are the years_hints")
 # pprint.pprint(years_hints, indent=1,sort_dicts=False)
+
+def check_sentences_for_asterisk(data):
+  asterisk_sentences = []
+  
+  # Recursively search for asterisk in the dictionary
+  def search_asterisk(obj):
+    if isinstance(obj, dict):
+      for key, value in obj.items():
+        if isinstance(value, dict):
+          search_asterisk(value)
+        elif isinstance(value, str) and '*' not in value:
+          asterisk_sentences.append(value)
+  
+  # Call the recursive search function
+  search_asterisk(data)
+  
+  return asterisk_sentences
+
+def remove_sentences_with_asterisk(data):
+    # Recursively remove sentences with asterisk from the dictionary
+    def remove_asterisk_sentences(obj):
+        if isinstance(obj, dict):
+            for key, value in list(obj.items()):
+                if isinstance(value, dict):
+                    remove_asterisk_sentences(value)  # Recursively call the removal function for nested dictionaries
+                elif isinstance(value, str) and '*' in value:  # Check if the value is a string containing an asterisk
+                    del obj[key]  # If asterisk found, remove the key-value pair
+    
+    # Create a deep copy of the original data to preserve the input dictionary
+    new_data = data.copy()
+    
+    # Call the recursive removal function
+    remove_asterisk_sentences(new_data)
+    
+    return new_data
