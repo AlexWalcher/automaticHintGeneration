@@ -29,17 +29,43 @@ def load_file_path(file_path):
   # pprint.pprint(df_list, indent=1)
   return df_list
 
-#location
-# file_path = "/content/automaticHintGeneration/testSet.xlsx"
-# df_list = load_file_path(file_path)
-# person_df = df_list["person"]
-# year_df = df_list["year"]
-# location_df = df_list["location"]
-
 template_sentence_location_list = ['The location you are looking for is/was a member of category 1.']
 
-# #from years
+#template sentences that are used to create the hint sentences
+template_sentence_location = 'The location you are looking for, is a member of the category x'
+template_sentence_location2 = 'The location you are looking for, belongs to the category '
+template_sentence_person = 'The person you are looking for, is a member of the category x'
+template_sentence_person2 = 'The person you are looking for, belongs to the category '
 
+#The basic sentences out of which we create the hint-sentences
+basic_sentences =  ['In the same year, ', 'In the previous year, ', 'In the following year, ']
+sport_sentences = [' has won the UEFA Champions League.', ' has won the UEFA Euro Football Championship.', ' has won the FIFA World Cup.', ' has won the F1 Drivers World Championship.', ]
+olympic_sentences = ['In the same year, the Summer Olympics were held in ', 'In the previous year, the Summer Olympics were held in ', 'In the following year, the Summer Olympics were held in ', 'In the same year, the Winter Olympics were held in ', 'In the previous year, the Winter Olympics were held in ', 'In the following year, the Winter Olympics were held in ']
+
+#list of interesting properties of people
+list_of_properties = ['nickname', 'country of citizenship', 'name in native language', 'native language', 'height',
+                  'occupation', 'field of work', 'educated at', 'residence', 'work period', 'ethnic group',
+                  'notable work', 'member of', 'owner of', 'significant event', 'award received',
+                  'date of birth', 'place of birth', 'date of death', 'place of death', 'manner of death',
+                  'cause of death', 'social media followers', 'father', 'mother', 'sibling', 'spouse', 'child', 'unmarried partner', 'sport']
+
+properties_blank_sentences = {
+  'child': 'The person you are looking for, has / children.',
+  'sibling': 'The person you are looking for, has / siblings.',
+  'native language': 'The person you are looking for, speaks 0.',
+  'occupation': 'The person you are looking for, is occupied as 0.',
+  'award received': 'The person you are looking for has won multiple awards in his life, some of them are 0.',
+  'ethnic group': 'The person you are looking for was/is a member of the follwoing ethnic group: 0.',
+  'nickname': 'The person you are looking for was/is also known under the follwoing nickname: 0.',
+  'significant event': 'Some of the most significant events of the searched person were: 0',
+  'notable work': 'The person you are looking for was involved in some very notable works, like: 0.',
+  'child + sibling': 'The person you are looking for, has / children and * siblings.',
+  'date of birth + place of birth': 'The person you are looking for was born on / in *.',
+  'date of birth + place of birth + date of death + place of death': 'The person you are looking for was born on / in * and died on - in +.' ,
+  'work period' :  'The person you are looking for was most active during / and *.'
+  }
+
+# #from years
 """
 This sorts the items in the dictionary based on the integer value of the second element in each key-value tuple (i.e. item[1]), in descending order (reverse=True).
 """
@@ -359,14 +385,14 @@ def get_categories_with_pv_answerEntities_location(location_questions_dict):
   cat_with_pv_location = get_pageviews_for_categories(cat_ranking_location)
   categories_with_subs_and_pageviews_location = get_dict_for_every_location(cat_ranking_location, cat_with_pv_location)
   new_ordered_dict_location = sorting_dict(categories_with_subs_and_pageviews_location)
-  return new_ordered_dict_location
+  copy_new_ordered_dict_location = prune_and_ordered_dict(new_ordered_dict_location, 10)
+  ordered_dict_location = sorting_dict(copy_new_ordered_dict_location)
+  return ordered_dict_location
 
 #takes the categories scores dict and chooses the category with the highest score
 def create_hint_sentences_unexCategs_location(categories_scores_dict, location_answers_dict):
   most_unexpected_categories_dict = {}
   hint_sentence_unexCateg_dict = {}
-  # print("categories_scores_dict")
-  # pprint.pprint(categories_scores_dict,indent=1)
   try:
     for key,value in categories_scores_dict.items():
       categories_scores_dict[key] = OrderedDict(sorted(value.items(), key=lambda x: x[1], reverse=True))
@@ -428,12 +454,8 @@ def get_location_hints_unexpected_categories(location_answers_dict):
   related_location_pageviews_dict = {}
   most_popular_related_location_with_categories = {}
   #time saving for first part (related locations recovery) 2m
-  # pprint.pprint(location_answers_dict)
-
   for key,value in location_answers_dict.items():
     related_location_dict[key] = get_related_location_from_location_name(key)
-  # pprint.pprint(related_location_dict)
-
   #time saving for second part (related locations with pageviews and ordering) - 16m (6-7m)
   for key,value in related_location_dict.items():
     inter_link_list = []
@@ -444,11 +466,8 @@ def get_location_hints_unexpected_categories(location_answers_dict):
   # pprint.pprint(related_location_pageviews_dict)
   #time saving for third part (related locations categories recovery and ordering) - 43m+ (14m-24m)
   most_popular_related_location_with_categories = get_categories_of_people_list(related_location_pageviews_dict)
-  # pprint.pprint(most_popular_related_location_with_categories)
-
   #time saving for third part retrieves the categories of the answer-entities - 9m+ (6m)
   answer_entities_with_categories_location = get_categories_with_pv_answerEntities_location(location_answers_dict)
-  #pprint.pprint(answer_entities_with_categories_location)
   #time saving for fourth part counts the categories of the answer-entities - 3s
   counted_category_apperances_location = count_categories_location(most_popular_related_location_with_categories, answer_entities_with_categories_location)
   ordered_data = {}
@@ -456,7 +475,6 @@ def get_location_hints_unexpected_categories(location_answers_dict):
     tmp = OrderedDict(value)
     ordered_data[key] = OrderedDict(sorted(tmp.items(), key=lambda x: x[1][0], reverse=True) )
   counted_category_apperances_location = ordered_data
-  #pprint.pprint(counted_category_apperances_location)
   #1. calculate the IoU between max and every other person - (M,C) = 5/20; (M,L) = 2/20; (M,D) = 2/20; (M,A) = 2/20; (M,F) = 2/20;
   intersection_between_locations_with_ae = calculate_IoU_from_countedCategoryDict(counted_category_apperances_location)
   #2. calculate the average diversity between the 6 drivers - (20-5) + (20-2) + (20-2) + (20-2) + (20-2) = 87; (#avg_diversity/#pairwise_comparison) = 87/5 = 17,4
@@ -467,10 +485,6 @@ def get_location_hints_unexpected_categories(location_answers_dict):
     categories_scores_dict_location[key] = OrderedDict(sorted(value.items(), key=lambda x: x[1], reverse=True))
   #create some sentences with the occupation and a unexpected category as hints
   mucd = create_hint_sentences_unexCategs_location(categories_scores_dict_location, location_answers_dict)
-  # pprint.pprint(mucd,  sort_dicts=False)
-  print('get_location_hints_unexpected_categories-mucd')
-  pprint.pprint(mucd)
-
   inter = {}
   for key, value in mucd.items():
     for answer,question in location_answers_dict.items():
@@ -606,8 +620,6 @@ def get_ranking_forfixed_properties(counted_category_apperances):
     categories_scores_dict[key] = OrderedDict(sorted(value.items(), key=lambda x: x[1], reverse=True))
   #create some sentences with the occupation and a unexpected category as hints
   mucd = create_hint_sentences_unexCategs_location(categories_scores_dict, person_answers_dict)
-  print('get_ranking_forfixed_properties-mucd')
-  pprint.pprint(mucd)
   return mucd
 
 def get_location_hints_fixed_properties(location_answers_dict):
@@ -996,11 +1008,6 @@ def find_most_common_links(data_dict):
   # Return a list of tuples with the link, count, and keys
   return [(link, data["count"], data["keys"]) for link, data in sorted_links[:20]]
 
-#template sentences that are used to create the hint sentences
-template_sentence_location = 'The location you are looking for, is a member of the category x'
-template_sentence_location2 = 'The location you are looking for, belongs to the category '
-template_sentence_person = 'The person you are looking for, is a member of the category x'
-template_sentence_person2 = 'The person you are looking for, belongs to the category '
 
 def get_categories_with_pageviews_person(person_questions_dict):
   cat_ranking_person = get_categories(person_questions_dict)
@@ -1317,10 +1324,6 @@ def extract_list_elements(html_string):
       if len(i) < 16: #check if entry is a link
         occupations_list.append(i)
   return occupations_list
-
-# people_list=[]
-# for l in dataPerson:
-#   people_list.append(l[1])
 
 #searches the occupation for every entry in people list
 def get_occupations(people_list):
@@ -1643,11 +1646,8 @@ def get_categories_of_people_list(people_list, limit=5):
     if len(related_people_orderd) == 0 or  len(top_most_popular_people) == 0:
       continue
     categories_of_related_people = get_categories(top_most_popular_people)
-    # pprint.pprint(categories_of_related_people)
     categories_with_pageviews_person = get_pageviews_for_categories(categories_of_related_people)
     categories_with_subs_and_pageviews_person = get_dict_for_every_location(categories_of_related_people, categories_with_pageviews_person)
-    # pprint.pprint(categories_with_subs_and_pageviews_person)
-
     new_ordered_dict_related_person = sorting_dict(categories_with_subs_and_pageviews_person)
     copy_new_ordered_dict_person_test = prune_and_ordered_dict(new_ordered_dict_related_person, 10)
     ordered_dict_related_person = sorting_dict(copy_new_ordered_dict_person_test)
@@ -1852,8 +1852,6 @@ def get_person_hints_unexpected_categories(person_answers_dict):
   for key,value in categories_scores_dict.items():
     categories_scores_dict[key] = OrderedDict(sorted(value.items(), key=lambda x: x[1], reverse=True))
   mucd = create_hint_sentences_unexCategs(categories_scores_dict, person_answers_dict)
-  print('get_person_hints_unexpected_categories-mucd')
-  pprint.pprint(mucd)
   inter = {}
   for key, value in mucd.items():
     for answer,question in person_answers_dict.items():
@@ -1863,28 +1861,7 @@ def get_person_hints_unexpected_categories(person_answers_dict):
   return inter
 
 """### Functions for the unexpected-predicate approach:"""
-#list of interesting properties of people
-list_of_properties = ['nickname', 'country of citizenship', 'name in native language', 'native language', 'height',
-                  'occupation', 'field of work', 'educated at', 'residence', 'work period', 'ethnic group',
-                  'notable work', 'member of', 'owner of', 'significant event', 'award received',
-                  'date of birth', 'place of birth', 'date of death', 'place of death', 'manner of death',
-                  'cause of death', 'social media followers', 'father', 'mother', 'sibling', 'spouse', 'child', 'unmarried partner', 'sport']
 
-properties_blank_sentences = {
-  'child': 'The person you are looking for, has / children.',
-  'sibling': 'The person you are looking for, has / siblings.',
-  'native language': 'The person you are looking for, speaks 0.',
-  'occupation': 'The person you are looking for, is occupied as 0.',
-  'award received': 'The person you are looking for has won multiple awards in his life, some of them are 0.',
-  'ethnic group': 'The person you are looking for was/is a member of the follwoing ethnic group: 0.',
-  'nickname': 'The person you are looking for was/is also known under the follwoing nickname: 0.',
-  'significant event': 'Some of the most significant events of the searched person were: 0',
-  'notable work': 'The person you are looking for was involved in some very notable works, like: 0.',
-  'child + sibling': 'The person you are looking for, has / children and * siblings.',
-  'date of birth + place of birth': 'The person you are looking for was born on / in *.',
-  'date of birth + place of birth + date of death + place of death': 'The person you are looking for was born on / in * and died on - in +.' ,
-  'work period' :  'The person you are looking for was most active during / and *.'
-  }
 
 """
 Retrieves the Wikipedia identifiers for a list of person names.
@@ -2040,8 +2017,6 @@ def get_wikipedia_backlinks_thumbcaption(url):
   backlink_sentences = {}
   backlinks = []
   if caption is not None:
-    # Extract the caption text and any backlinks
-    # backlink_sentences = {}
     sentences = caption.text.strip().split('.')
     for sentence in sentences:
       links = caption.find_all('a', href=True, string=re.compile(sentence))
@@ -2093,13 +2068,11 @@ This will output a list of all the sentences in the thumbcaption, split by ';'.
 """
 def get_thumbcaption_sentences(url):
   # Get the HTML content of the page
-  # pprint.pprint(url)
   page = requests.get(url)
   soup = BeautifulSoup(page.content, 'html.parser')
   # Find the thumbcaption element
   thumbcaption = soup.find('div', class_='thumbcaption')
   # Get all the sentences in the thumbcaption
-  # print(thumbcaption)
   try:
     sentences = thumbcaption.text.split('; ')
   except Exception as e:
@@ -2126,7 +2099,6 @@ def combine_dicts_from_links(link_list):
   combined_dict = {}
   for link in link_list:
     header, data = get_table_info(link)
-    #print(data)
     link_dict = list_to_dict(data)
     combined_dict.update(link_dict)
   return combined_dict
@@ -2205,7 +2177,6 @@ def thumbcaption_hints_per_year(years_list):
   for y in years_list:
     years_key = str(y)
     test_link = wiki_base_link + years_key
-    # print(test_link)
     sentences_of_thumbcaption = get_thumbcaption_sentences(test_link) #just gets the sentences from the thumbcaption section of a wikipedi years page
     thumbcaption = get_wikipedia_backlinks_thumbcaption(test_link) #get all backlinks of the thumbcapture of the year (those are the most known events)
     thumbcaption_key = next(iter(thumbcaption))
@@ -2232,7 +2203,6 @@ Returns:  dict: A dictionary with the most popular events of a year retrieved fr
 
 def get_year_thumbcaption_hints(qa_dict):
   file_years_list = []
-  # for index, row in year_df.iterrows():
   for index, row in qa_dict.items():
     file_years_list.append(int(index))
   pop_thumb_hints = thumbcaption_hints_per_year(file_years_list)
@@ -2313,7 +2283,6 @@ def create_dict_from_list(lst):
   result = {}
   for item in lst:
     parts = item.split(":")
-    # parts = parts.strip().replace(":", "")
     result[parts[0]] = parts[1]
   return result
 
@@ -2423,10 +2392,6 @@ def winter_olympics_hosts_list():
   tmp1 = clean_driver_names(tmp1)
   return tmp1
 
-#The basic sentences out of which we create the hint-sentences
-basic_sentences =  ['In the same year, ', 'In the previous year, ', 'In the following year, ']
-sport_sentences = [' has won the UEFA Champions League.', ' has won the UEFA Euro Football Championship.', ' has won the FIFA World Cup.', ' has won the F1 Drivers World Championship.', ]
-olympic_sentences = ['In the same year, the Summer Olympics were held in ', 'In the previous year, the Summer Olympics were held in ', 'In the following year, the Summer Olympics were held in ', 'In the same year, the Winter Olympics were held in ', 'In the previous year, the Winter Olympics were held in ', 'In the following year, the Winter Olympics were held in ']
 
 #write all of the winners of the different sports categories into lists
 cl_all = champions_league_winners_list() #For the Champions league,
@@ -2442,12 +2407,7 @@ returns a dict with the corresponding sports events from the years in years_list
 '''
 def popular_sports_per_year(years_list):
   pop_sport_hints_year = {}
-  # pprint.pprint(years_list)
-  # print(years_list)
-  # print("hallo")
-
   for index in years_list:
-    # pprint.pprint(index)
     year = int(index)
     year_s = str(year)
     year_dict = {
@@ -2458,9 +2418,6 @@ def popular_sports_per_year(years_list):
         'summer': '', 'p_summer': '', 'f_summer': '',
         'winter': '', 'p_winter': '', 'f_winter': ''
     }
-    # print("hallo")
-    # print(year, type(year))
-    # print(index, type(index))
   # UEFA Champions League: Create the sentences like (In the same-, the following-, the previous-year)
     for key in cl_all:
       if int(key.split('-')[1]) == year % 100:
@@ -2558,10 +2515,6 @@ def popular_sports_per_year(years_list):
 #returns a dictionary of the years that occured in the xls file, with its corresponding hints from the most popular sports events of that year.
 def get_year_sports_hints(qa_dict):
   file_years_list = []
-  # for index, row in year_df.iterrows():
-  # for index, row in qa_dict.items():
-  #   print(index, row)
-
   for index, row in qa_dict.items():
     file_years_list.append(int(index))
   pop_sport_hints = popular_sports_per_year(file_years_list)
@@ -2640,7 +2593,6 @@ def retrieve_historical_information(start_date, end_date):
   result = parse_xml_file(saved_file)
   return result
 
-#put everything together
 """
 Extracts the date and description from the XML string and returns a dictionary.
 Args: xml_string (str): The XML data in string format.
@@ -2669,16 +2621,13 @@ Returns:  dict: A dictionary with the date as the key and the event descriptions
 def get_year_vizgr_hints(qa_dict):
   file_years_list = []
   final_hints = {}
-
   # for index, row in year_df.iterrows():
   for index, row in qa_dict.items():
-    # print(index,row)
     if int(index) < 2012:
       file_years_list.append(int(index))
   for year in file_years_list:
     inter_start_date = str(year) + "0101"
     inter_end_date = str(year) + "1231"
-    #print(inter_start_date, inter_end_date)
     inter_solution = retrieve_historical_information(inter_start_date, inter_end_date)
     vizgr_hint_descriptions = extract_description(inter_solution)
     vizgr_hint_sentences = {}
@@ -2750,18 +2699,15 @@ def order_dictionary(my_dict):
 # Test for utility score of new questions; calculate score via BERT for each question,hint pair and write the score together with the question into the sim_scores dictionary.
 # """
 def generate_hints_years(qa_dict):
-  # print(qa_dict)
   pop_year_hints = {}
   #pop_thumb_hints = {}
   pop_vizgr_hints = {}
-
 
   pop_year_hints = get_year_sports_hints(qa_dict)
   #pop_thumb_hints = get_year_thumbcaption_hints(qa_dict)
   pop_vizgr_hints = get_year_vizgr_hints(qa_dict)
   years_hints = {}
 
-  
   # year_dict = {
   #   'sports': years_hints,
   #   'thumbcaption':years_hints,
@@ -2771,11 +2717,6 @@ def generate_hints_years(qa_dict):
   for y in pop_year_hints:
     year_dict= {}
     try:
-      # year_dict = {
-      #     'sports': pop_year_hints[y],
-      #     'thumbcaption': pop_thumb_hints[y],
-      #     'vizgr' : pop_vizgr_hints[y]
-      # }
       if pop_year_hints[y]:
         year_dict['sports'] = pop_year_hints[y]
       #if pop_thumb_hints[y]:
@@ -2816,11 +2757,6 @@ def generate_hints_years(qa_dict):
   ordered_dict = order_dictionary(sim_scores)
   return ordered_dict
 
-#generates and prints the hints in the testSet.xlms file
-# qa_dict = dict(zip(year_df['Answer'], year_df['Question']))
-# years_hints = generate_hints_years(qa_dict)
-# print("This are the years_hints")
-# pprint.pprint(years_hints, indent=1,sort_dicts=False)
 
 def check_sentences_for_asterisk(data):
   asterisk_sentences = []
@@ -2833,26 +2769,23 @@ def check_sentences_for_asterisk(data):
           search_asterisk(value)
         elif isinstance(value, str) and '*' not in value:
           asterisk_sentences.append(value)
-  
   # Call the recursive search function
   search_asterisk(data)
   
   return asterisk_sentences
 
 def remove_sentences_with_asterisk(data):
-    # Recursively remove sentences with asterisk from the dictionary
-    def remove_asterisk_sentences(obj):
-        if isinstance(obj, dict):
-            for key, value in list(obj.items()):
-                if isinstance(value, dict):
-                    remove_asterisk_sentences(value)  # Recursively call the removal function for nested dictionaries
-                elif isinstance(value, str) and '*' in value:  # Check if the value is a string containing an asterisk
-                    del obj[key]  # If asterisk found, remove the key-value pair
-    
-    # Create a deep copy of the original data to preserve the input dictionary
-    new_data = data.copy()
-    
-    # Call the recursive removal function
-    remove_asterisk_sentences(new_data)
+  # Recursively remove sentences with asterisk from the dictionary
+  def remove_asterisk_sentences(obj):
+    if isinstance(obj, dict):
+      for key, value in list(obj.items()):
+        if isinstance(value, dict):
+          remove_asterisk_sentences(value)  # Recursively call the removal function for nested dictionaries
+        elif isinstance(value, str) and '*' in value:  # Check if the value is a string containing an asterisk
+          del obj[key]  # If asterisk found, remove the key-value pair
+  # Create a deep copy of the original data to preserve the input dictionary
+  new_data = data.copy()
+  # Call the recursive removal function
+  remove_asterisk_sentences(new_data)
     
     return new_data

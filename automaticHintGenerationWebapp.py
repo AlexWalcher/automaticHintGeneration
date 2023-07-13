@@ -28,7 +28,7 @@ elif selected == "Upload file":
         df.to_excel(save_path)
       if save_path.exists():
         st.success(f'uploaded_file {file_name} is successfully saved!')
-        with st.spinner('Wait for it...'):
+        with st.spinner('Generating ...'):
             file_path = "/content/automaticHintGeneration/tmp/testSet_WebApp.xlsx"
             gen_hints = generate_hints_from_xlsx(file_path)
         st.write('Generated hints:')
@@ -50,7 +50,7 @@ elif selected == "Year question":
                 item = 'Question: ' + str(Question) + '; ' + 'Answer: ' + year_as_txt
                 writefile.write(item + "\n")
                 writefile.close()
-            with st.spinner('Wait for it...'):
+            with st.spinner('Generating ...'):
                 file_path = "/content/automaticHintGeneration/tmp/questionYear.txt"
                 gen_hints = generate_hints_from_txt(file_path)
             st.write('Generated hints:')
@@ -69,7 +69,7 @@ elif selected == "Location question":
                 item = 'Question: ' + str(Question) + '; ' + 'Answer: ' + str(Answer)
                 writefile.write(item + "\n")
                 writefile.close()
-            with st.spinner('Wait for it...'):
+            with st.spinner('Generating ...'):
                 file_path = "/content/automaticHintGeneration/tmp/questionLocation.txt"
                 gen_hints = generate_hints_from_txt(file_path)
             st.write('Generated hints:')
@@ -88,7 +88,7 @@ elif selected == "Person question":
                 item = 'Question: ' + str(Question) + '; ' + 'Answer: ' + str(Answer)
                 writefile.write(item + "\n")
                 writefile.close()
-            with st.spinner('Wait for it...'):
+            with st.spinner('Generating ...'):
                 file_path = "/content/automaticHintGeneration/tmp/questionPerson.txt"
                 gen_hints = generate_hints_from_txt(file_path)
             st.write('Generated hints:')
