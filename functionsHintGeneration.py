@@ -2788,4 +2788,4 @@ def remove_sentences_with_asterisk(data):
   # Call the recursive removal function
   remove_asterisk_sentences(new_data)
     
-    return new_data
+  return new_data
