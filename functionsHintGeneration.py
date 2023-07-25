@@ -6,9 +6,39 @@ Most of them are reused/shared between the different hint-types (years, people, 
 from code import InteractiveInterpreter
 from importsHintGeneration import *
 
+# gl_person_questions_dict_from_txt = {}
+# # gl_location_questions_dict = {}
+# # gl_year_questions_dict = {}
+
+# class Test:
+#   def __init__(self):
+#     self.gl_person_questions_dict = {}
+#     self.gl_location_questions_dict = {}
+#     self.gl_year_questions_dict = {}
+
+#   def get_person_questions_dict(self):
+#     return self.gl_person_questions_dict
+
+#   def set_person_questions_dict(self, value):
+#     self.gl_person_questions_dict = value
+
+#   def get_location_questions_dict(self):
+#     return self.gl_location_questions_dict
+
+#   def set_location_questions_dict(self, value):
+#     self.gl_location_questions_dict = value
+
+#   def get_year_questions_dict(self):
+#     return self.gl_year_questions_dict
+
+#   def set_year_questions_dict(self, value):
+#     self.gl_year_questions_dict = value
+
+
 def load_file_path(file_path):
   #file_path = "/content/automaticHintGeneration/testSet.xlsx"
   df = pd.ExcelFile(file_path).parse("Sheet1")
+  obj = Test()
   dataPerson = []
   dataYear = []
   dataLocation = []
@@ -26,8 +56,15 @@ def load_file_path(file_path):
   df_list["person"] = person_df
   df_list["year"] = year_df
   df_list["location"] =location_df
+  year_questions_dict = dict(zip(year_df['Answer'], year_df['Question']))
+  obj.set_year_questions_dict(year_questions_dict)
+  person_questions_dict = dict(zip(person_df['Answer'], person_df['Question']))
+  obj.set_person_questions_dict(person_questions_dict)
+  location_questions_dict = dict(zip(location_df['Answer'], location_df['Question']))
+  obj.set_location_questions_dict(location_questions_dict)
   # pprint.pprint(df_list, indent=1)
   return df_list
+
 
 template_sentence_location_list = ['The location you are looking for is/was a member of category 1.']
 
@@ -65,12 +102,12 @@ properties_blank_sentences = {
   'work period' :  'The person you are looking for was most active during / and *.'
   }
 
-# #from years
-"""
-This sorts the items in the dictionary based on the integer value of the second element in each key-value tuple (i.e. item[1]), in descending order (reverse=True).
-"""
-def sort_dict_desc(d):
-  return {k: v for k, v in sorted(d.items(), key=lambda item: int(item[1]), reverse=True)}
+# # #from years
+# """
+# This sorts the items in the dictionary based on the integer value of the second element in each key-value tuple (i.e. item[1]), in descending order (reverse=True).
+# """
+# def sort_dict_desc(d):
+#   return {k: v for k, v in sorted(d.items(), key=lambda item: int(item[1]), reverse=True)}
 
 # Load pre-trained model and tokenizer
 model_name = 'bert-base-uncased'
@@ -102,26 +139,98 @@ def get_similarity_score(text1, text2):
 """
 Given a URL, this function opens the url and retrieves the information stored in a table.
 """
-def get_table_info(url):
-  options = webdriver.FirefoxOptions()
-  #options.headless = True
-  options.add_argument('--headless')
-  #print("get_table_info TEST")
+# def get_table_info(url):
+#   options = webdriver.FirefoxOptions()
+#   #options.headless = True
+#   options.add_argument('--headless')
+#   #print("get_table_info TEST")
+#   try:
+#     driver = webdriver.Firefox(options=options)
+#     driver.get(url)
+#     time.sleep(10) # Wait for the page to load completely
+#     soup = BeautifulSoup(driver.page_source, 'html.parser')
+#     driver.quit()
+#     table = soup.find('table')
+#     rows = table.find_all('tr')
+#     headers = [header.text.strip() for header in rows[0].find_all('th')]
+#     data = []
+#   except Exception as e:
+#     pass
+#   for row in rows[1:]:
+#       data.append([cell.text.strip() for cell in row.find_all('td')])
+#   return (headers, data)
+
+def get_table_info(url, table_number=2):
+
+  html = wikipedia.page(url).html().encode("UTF-8")
+  try: 
+      df = pd.read_html(html)[ table_number]  # Try 2nd table first as most pages contain contents table first
+  except IndexError:
+      df = pd.read_html(html)[0]
+
+  return df
+
+
+"""
+This function takes a subject, a wikipedia page, calls the link and retrieves the pageviews.
+"""
+def get_pageviews(subject):
+  wikipedia_api_url = "https://en.wikipedia.org/w/index.php?title="
+
+  page_title=subject.replace(" ", "_")
+  url = wikipedia_api_url + page_title + '&action=info'
+
   try:
-    driver = webdriver.Firefox(options=options)
-    driver.get(url)
-    time.sleep(10) # Wait for the page to load completely
-    soup = BeautifulSoup(driver.page_source, 'html.parser')
-    driver.quit()
-    table = soup.find('table')
-    rows = table.find_all('tr')
-    headers = [header.text.strip() for header in rows[0].find_all('th')]
-    data = []
-  except Exception as e:
-    pass
-  for row in rows[1:]:
-      data.append([cell.text.strip() for cell in row.find_all('td')])
-  return (headers, data)
+    response = requests.get(url)
+    if response.status_code == 200:
+      page_content = response.text
+      soup = BeautifulSoup(page_content, 'html.parser')
+
+      tr_element = soup.find('div', {'class': 'mw-pvi-month'})
+
+      if tr_element:
+        value = tr_element.text.strip()
+        return value
+      else:
+        print("Could not find 'mw-pvi-month' element.")
+        return None
+    else:
+      print(f"Failed to fetch page content. Status code: {response.status_code}")
+      return None
+
+  except requests.exceptions.RequestException as e:
+    print(f"Error fetching data: {e}")
+    return []
+  
+def get_pageviews_from_list(subject_list):
+
+  ret = {}
+  for subject in subject_list:
+    pvs = get_pageviews(subject)
+    ret[subject] = pvs
+
+  return ret
+
+def get_pageviews_from_linkssssssss(related_people_dict):
+  # pageviews_range_url = 'https://pageviews.wmcloud.org/?project=en.wikipedia.org&platform=all-access&agent=user&redirects=0&range=last-year&pages='
+  return_dict = {}
+  for key,value in related_people_dict.items():
+    entity_list = []
+    for k in value:
+      entity_list.append(k['title'])
+  
+    pvs_list = get_pageviews_from_list(entity_list)
+    print(pvs_list)
+    return_dict[key] = pvs_list
+
+    # link_list = value
+    # pruned_link_parts_list = extract_last_parts(link_list)
+    # concat_str_for_links = concatenate_elements(pruned_link_parts_list)             #combine up to 10 of these links to create a request to pageview
+    # pageviews_url_list = combine_pv_urls(pageviews_range_url, concat_str_for_links) #now we have a list of pageview links with all the backlinks of the thumbcaption part of the wiki page (REUSED FROM YEARS PART)
+    # categories_with_pageviews =combine_dicts_from_links(pageviews_url_list)         #now we called the links and retreieved the pageviews; saved them as a dictionary
+    # ordered_categories_with_pageviews = sort_dict_desc(categories_with_pageviews)   #now the list is ordered in ascending order
+    # return_dict[key] = ordered_categories_with_pageviews
+  return return_dict
 
 """
 This function converts a list into a dict in the way that is needed.
@@ -160,31 +269,45 @@ def get_related_links(wiki_link):
 def get_categories(subject_dict):
   categories_for_subject_dict= {}
   rankings_for_categories_dict = {}
+  # r2 = {}
   #creates a dict with all the dicts of each location with its categories and sub-categories
+  # people_occupations = get_occupations(subject_dict)
   for subject, question in subject_dict.items():
     try:
       ranking = get_categories_ranking(subject)
+      # print(ranking)
+      # sor = dict(sorted(ranking.items(), key=lambda x: int(x[1].replace(',', ''))))
+      # print("sorted", sor)
       ordict = OrderedDict(ranking)
       rankings_for_categories_dict[subject] = ordict
     except Exception as e:
+      print(e)
       pass
+    # for k,v in people_occupations.items():
+    #   for a,b in ranking.items():
+    #     if k == a:
+    #       if v not in b:
+    #         r2[a]=b
   return rankings_for_categories_dict
 
 #given a dictionary with all the categories, the function returns the categories in a OrderedDict with the corresponding pageviews for each category
-def get_pageviews_for_categories(cat_dict):
-  pageviews_range_url = 'https://pageviews.wmcloud.org/?project=en.wikipedia.org&platform=all-access&agent=user&redirects=0&range=last-year&pages='
-  all_cats_with_pvs = {}
-  for subject in cat_dict:
-    ord_dict = OrderedDict()
-    ordered_dict_sub =  cat_dict[subject]
-    links_list = [link for link in ordered_dict_sub.keys()]
-    pruned_link_parts_list = extract_last_parts(links_list)
-    concat_str_for_links = concatenate_elements(pruned_link_parts_list) #combine up to 10 of these links to create a request to pageview
-    pageviews_url_list = combine_pv_urls(pageviews_range_url, concat_str_for_links) #now we have a list of pageview links with all the backlinks of the thumbcaption part of the wiki page (REUSED FROM YEARS PART)
-    categories_with_pageviews =combine_dicts_from_links(pageviews_url_list) #now we called the links and retreieved the pageviews; saved them as a dictionary
-    ordered_categories_with_pageviews = sort_dict_desc(categories_with_pageviews) #now the list is ordered in ascending order
-    all_cats_with_pvs[subject] = OrderedDict(categories_with_pageviews)
-  return all_cats_with_pvs
+# def get_pageviews_for_categories(cat_dict):
+#   pageviews_range_url = 'https://pageviews.wmcloud.org/?project=en.wikipedia.org&platform=all-access&agent=user&redirects=0&range=last-year&pages='
+#   all_cats_with_pvs = {}
+#   for subject in cat_dict:
+#     ord_dict = OrderedDict()
+#     ordered_dict_sub =  cat_dict[subject]
+#     links_list = [link for link in ordered_dict_sub.keys()]
+#     pruned_link_parts_list = extract_last_parts(links_list)
+#     concat_str_for_links = concatenate_elements(pruned_link_parts_list) #combine up to 10 of these links to create a request to pageview
+#     pageviews_url_list = combine_pv_urls(pageviews_range_url, concat_str_for_links) #now we have a list of pageview links with all the backlinks of the thumbcaption part of the wiki page (REUSED FROM YEARS PART)
+#     print(pruned_link_parts_list)
+#     print(pageviews_range_url)
+#     print(concat_str_for_links)
+#     categories_with_pageviews =combine_dicts_from_links(pageviews_url_list) #now we called the links and retreieved the pageviews; saved them as a dictionary
+#     ordered_categories_with_pageviews = sort_dict_desc(categories_with_pageviews) #now the list is ordered in ascending order
+#     all_cats_with_pvs[subject] = OrderedDict(categories_with_pageviews)
+#   return all_cats_with_pvs
 
 def sorting_dict(sor_dict):
   ret = {}
@@ -233,21 +356,41 @@ Args:     dictionary where the keys are the answer-entities and the value is a d
 Returns:  dictionary where the keys are the answer-entities and the value is
   a dict where the keys are the related-people and the valus are tupples with the 10 most popular categories they appear and with the pageviews of that category
 """
-def get_categories_of_people_list(people_list, limit=5):
-  return_dict = {}
-  for key,value in people_list.items():
-    related_people_orderd = dict(sorted(value.items(), key=lambda x: x[1], reverse=True))   #order the dict after the pageviews in descending order
-    top_most_popular_people = dict(itertools.islice(related_people_orderd.items(), 5))      #take the top 5 most known people from the list
-    if len(related_people_orderd) == 0 or  len(top_most_popular_people) == 0:
-      continue
-    categories_of_related_people = get_categories(top_most_popular_people)
-    categories_with_pageviews_person = get_pageviews_for_categories(categories_of_related_people)
-    categories_with_subs_and_pageviews_person = get_dict_for_every_location(categories_of_related_people, categories_with_pageviews_person)
-    new_ordered_dict_related_person = sorting_dict(categories_with_subs_and_pageviews_person)
-    copy_new_ordered_dict_person_test = prune_and_ordered_dict(new_ordered_dict_related_person, 10)
-    ordered_dict_related_person = sorting_dict(copy_new_ordered_dict_person_test)
-    return_dict[key] = ordered_dict_related_person
-  return return_dict
+# def get_categories_of_people_list(people_list, limit=5):
+#   return_dict = {}
+#   for key,value in people_list.items():
+#     related_people_orderd = dict(sorted(value.items(), key=lambda x: x[1], reverse=True))   #order the dict after the pageviews in descending order
+#     top_most_popular_people = dict(itertools.islice(related_people_orderd.items(), 5))      #take the top 5 most known people from the list
+#     if len(related_people_orderd) == 0 or  len(top_most_popular_people) == 0:
+#       continue
+#     categories_of_related_people = get_categories(top_most_popular_people)
+#     categories_with_pageviews_person = get_pageviews_for_categories(categories_of_related_people)
+#     categories_with_subs_and_pageviews_person = get_dict_for_every_location(categories_of_related_people, categories_with_pageviews_person)
+#     new_ordered_dict_related_person = sorting_dict(categories_with_subs_and_pageviews_person)
+#     copy_new_ordered_dict_person_test = prune_and_ordered_dict(new_ordered_dict_related_person, 10)
+#     ordered_dict_related_person = sorting_dict(copy_new_ordered_dict_person_test)
+#     return_dict[key] = ordered_dict_related_person
+#   return return_dict
+# def get_categories_of_people_list(people_list, limit=5):
+#   return_dict = {}
+#   for key,value in people_list.items():
+#     related_people_orderd = dict(sorted(value.items(), key=lambda x: x[1], reverse=True))   #order the dict after the pageviews in descending order
+#     top_most_popular_people = dict(itertools.islice(related_people_orderd.items(), 5))      #take the top 5 most known people from the list
+#     if len(related_people_orderd) == 0 or  len(top_most_popular_people) == 0:
+#       continue
+#     categories_of_related_people = get_categories(top_most_popular_people)
+#     categories_with_pageviews_person = get_pageviews_for_categories(categories_of_related_people)
+#     categories_with_subs_and_pageviews_person = get_dict_for_every_location(categories_of_related_people, categories_with_pageviews_person)
+#     copy_new_ordered_dict_person_test = prune_and_ordered_dict(categories_with_subs_and_pageviews_person, 10)
+#     pprint.pprint(copy_new_ordered_dict_person_test, sort_dicts=False)
+#     return_dict[key] = copy_new_ordered_dict_person_test
+#   return_dict = order_dict_by_second_entry(return_dict)
+#   return return_dict
+
+
+
+
+
 
 """
 Calculates the Intersection over Union between the answer-entity and each of the related-person entries seperately
@@ -311,6 +454,7 @@ def calculate_avg_diversity_from_IoU(intersection_between_people_with_ae):
       avg_diversity_dict[key] = 0
   return avg_diversity_dict
 
+
 """
 Calculates the categories score from the category diversity (calculated by calculate_avg_diversity_from_IoU() ) and the cat_popularity (=pageviews)
 Args:
@@ -325,7 +469,11 @@ def calculate_categories_score(counted_category_apperances, avg_diversity_from_I
       cat_popularity = item[1][1]
       for name, cat_div in avg_diversity_from_IoU.items():
         if name == key:
-          inter_dict[link] = cat_popularity * cat_div
+          # print(cat_popularity[1] , cat_div)
+          try:
+            inter_dict[link] = float(cat_popularity[1]) * float(cat_div)
+          except Exception as e:
+            print(e)
     categories_scores_dict[key] = inter_dict
   ordered_dicter = {}
   ordered_scores ={}
@@ -339,6 +487,35 @@ def calculate_categories_score(counted_category_apperances, avg_diversity_from_I
       if '20th' in link or '21st' in link:
         value[link]  = score / 4
   return ordered_dicter
+
+# """
+# Calculates the categories score from the category diversity (calculated by calculate_avg_diversity_from_IoU() ) and the cat_popularity (=pageviews)
+# Args:
+# Returns:
+# """
+# def calculate_categories_score(counted_category_apperances, avg_diversity_from_IoU):
+#   categories_scores_dict = {}
+#   for key,value in counted_category_apperances.items():
+#     inter_dict={}
+#     for item in value.items():
+#       link = item[0]
+#       cat_popularity = item[1][1]
+#       for name, cat_div in avg_diversity_from_IoU.items():
+#         if name == key:
+#           inter_dict[link] = cat_popularity * cat_div
+#     categories_scores_dict[key] = inter_dict
+#   ordered_dicter = {}
+#   ordered_scores ={}
+#   for k,v in categories_scores_dict.items():
+#     ordered_scores[k] = OrderedDict(v)
+#   for k,v in ordered_scores.items():
+#     ordered_dicter[k] = OrderedDict(sorted(v.items(), key=lambda x: x[1], reverse=True))
+#   #modify the scores to give some categories a lower one
+#   for key,value in ordered_dicter.items():
+#     for link, score in value.items():
+#       if '20th' in link or '21st' in link:
+#         value[link]  = score / 4
+#   return ordered_dicter
 
 # #from location
 #combines the pageviews of the categories of the location together with the sub-categories and pages of those subcategories
@@ -380,14 +557,39 @@ Function that is created with help of reusable function from above
 Args:     location_question_dict with all locations with their questions
 Returns:  dictionary where the keys are the answer-entities and the value is a OrderedDict of all categories with pageviews
 """
+# def get_categories_with_pv_answerEntities_location(location_questions_dict):
+#   cat_ranking_location = get_categories(location_questions_dict)
+#   cat_with_pv_location = get_pageviews_for_categories(cat_ranking_location)
+#   categories_with_subs_and_pageviews_location = get_dict_for_every_location(cat_ranking_location, cat_with_pv_location)
+#   new_ordered_dict_location = sorting_dict(categories_with_subs_and_pageviews_location)
+#   copy_new_ordered_dict_location = prune_and_ordered_dict(new_ordered_dict_location, 10)
+#   ordered_dict_location = sorting_dict(copy_new_ordered_dict_location)
+
+#   return ordered_dict_location
+
+"""
+Function that is created with help of reusable function from above
+Args:     location_question_dict with all locations with their questions
+Returns:  dictionary where the keys are the answer-entities and the value is a OrderedDict of all categories with pageviews
+"""
 def get_categories_with_pv_answerEntities_location(location_questions_dict):
   cat_ranking_location = get_categories(location_questions_dict)
   cat_with_pv_location = get_pageviews_for_categories(cat_ranking_location)
   categories_with_subs_and_pageviews_location = get_dict_for_every_location(cat_ranking_location, cat_with_pv_location)
-  new_ordered_dict_location = sorting_dict(categories_with_subs_and_pageviews_location)
-  copy_new_ordered_dict_location = prune_and_ordered_dict(new_ordered_dict_location, 10)
-  ordered_dict_location = sorting_dict(copy_new_ordered_dict_location)
-  return ordered_dict_location
+  
+  intermediate_dict = {}
+  intermediate_ordere = {}
+  for a,b in categories_with_subs_and_pageviews_location.items():
+    inter_list = []
+    for key in b.items():
+      inter_list.append((key[0], int(key[1].replace(",", ""))))
+    intermediate_ordere[a] = OrderedDict(sorted(inter_list, key=lambda x: x[1], reverse=True))
+
+  # new_ordered_dict_location = sorting_dict(categories_with_subs_and_pageviews_location)
+  # copy_new_ordered_dict_location = prune_and_ordered_dict(new_ordered_dict_location, 10)
+  # ordered_dict_location = sorting_dict(copy_new_ordered_dict_location)
+
+  return intermediate_ordere
 
 #takes the categories scores dict and chooses the category with the highest score
 def create_hint_sentences_unexCategs_location(categories_scores_dict, location_answers_dict):
@@ -412,31 +614,65 @@ Returns: dict: A new dictionary where the keys are the category links and the va
   the corresponding tuples of the category with a middle value indicating how
   often the link/category appeared in the other keys.
 """
+# def count_categories_location(related_people_with_categories, answer_entities_with_categories):
+#   category_appereances = {}
+#   for answerEntityKey, aeCategory in answer_entities_with_categories.items():
+#     for answerKey, relatedDict in related_people_with_categories.items():
+#       if answerEntityKey == answerKey:
+#         inner_dict = {}
+#         for categ, pvs in aeCategory.items():
+#           people_list = []
+#           for relatedPersonKey, catWithPvs in relatedDict.items():
+#             for relCateg, relPvs in  catWithPvs.items():
+#               if categ == relCateg:
+#                 rel_location_str = str(relatedPersonKey)
+#                 if rel_location_str not in people_list and categ == relCateg:
+#                   people_list.append(rel_location_str)
+#                 inner_dict[categ] = (len(people_list),relPvs, people_list)
+#     category_appereances[answerEntityKey] = inner_dict
+#   for k,v in category_appereances.items():
+#     if len(v) == 0:
+#       for answerEntityKey, aeCategory in answer_entities_with_categories.items():
+#         if k == answerEntityKey:
+#           inner_dict={}
+#           for a,b in aeCategory.items():
+#             inner_dict[a] = (0, b, [])
+#           category_appereances[k] = inner_dict
+#   return category_appereances
+
+
 def count_categories_location(related_people_with_categories, answer_entities_with_categories):
   category_appereances = {}
   for answerEntityKey, aeCategory in answer_entities_with_categories.items():
+    inner_dict = {}
     for answerKey, relatedDict in related_people_with_categories.items():
       if answerEntityKey == answerKey:
-        inner_dict = {}
-        for categ, pvs in aeCategory.items():
+
+        for cat, pvs in aeCategory.items():
           people_list = []
+          # print("cat: "+ str(cat))
           for relatedPersonKey, catWithPvs in relatedDict.items():
-            for relCateg, relPvs in  catWithPvs.items():
-              if categ == relCateg:
-                rel_location_str = str(relatedPersonKey)
-                if rel_location_str not in people_list and categ == relCateg:
-                  people_list.append(rel_location_str)
-                inner_dict[categ] = (len(people_list),relPvs, people_list)
+            for categ in catWithPvs:
+              if categ[0] == cat:
+                print(cat, categ, answerEntityKey, relatedPersonKey)
+                rel_pers_str = str(relatedPersonKey)
+                if rel_pers_str not in people_list and categ[0] == cat:
+                  people_list.append(rel_pers_str)
+                inner_dict[cat] = (len(people_list),categ, people_list)
+
     category_appereances[answerEntityKey] = inner_dict
-  for k,v in category_appereances.items():
-    if len(v) == 0:
-      for answerEntityKey, aeCategory in answer_entities_with_categories.items():
-        if k == answerEntityKey:
-          inner_dict={}
-          for a,b in aeCategory.items():
-            inner_dict[a] = (0, b, [])
-          category_appereances[k] = inner_dict
+
+    for k,v in category_appereances.items():
+      if len(v) == 0:
+        for answerEntityKey, aeCategory in answer_entities_with_categories.items():
+          if k == answerEntityKey:
+            inner_dict={}
+            for a,b in aeCategory.items():
+              inner_dict[a] = (0, b, [])
+            category_appereances[k] = inner_dict
+
   return category_appereances
+
 
 #CREATE A FUNCTION THAT PUTS EVERYTHING TOGETHER - FOR UNEXPECTED CATEGORIES FOR LOCATIONS
 """
@@ -823,6 +1059,8 @@ def get_category_title(category_url):
   else:
     return None
 
+# countries_list = ['Afghan', 'Albanian', 'Algerian', 'Andorran', 'Angolan', 'Argentinian', 'Armenian', 'Australian', 'Austrian', 'Azerbaijani', 'Bahamian', 'Bahraini', 'Bangladeshi', 'Barbadian', 'Belarusian', 'Belgian', 'Belizean', 'Beninese', 'Bhutanese', 'Bolivian', 'Bosnian', 'Motswana', 'Brazilian', 'Bruneian', 'Bulgarian', 'Burkinabe', 'Burundian', 'Cambodian', 'Cameroonian', 'Canadian', 'Cape Verdean', 'Central African', 'Chadian', 'Chilean', 'Chinese', 'Colombian', 'Comorian', 'Congolese', 'Congolese', 'Costa Rican', 'Croatian', 'Cuban', 'Cypriot', 'Czech', 'Danish', 'Djiboutian', 'Dominican', 'Dominican', 'East Timorese', 'Ecuadorian', 'Egyptian', 'Salvadoran', 'Equatorial Guinean', 'Eritrean', 'Estonian', 'Swazi', 'Ethiopian', 'Fijian', 'Finnish', 'French', 'Gabonese', 'Gambian', 'Georgian', 'German', 'Ghanaian', 'Greek', 'Grenadian', 'Guatemalan', 'Guinean', 'Guinea-Bissauan', 'Guyanese', 'Haitian', 'Honduran', 'Hungarian', 'Icelander', 'Indian', 'Indonesian', 'Iranian', 'Iraqi', 'Irish', 'Israeli', 'Italian', 'Jamaican', 'Japanese', 'Jordanian', 'Kazakhstani', 'Kenyan', 'I-Kiribati', 'North Korean', 'South Korean', 'Kuwaiti', 'Kyrgyzstani', 'Laotian', 'Latvian', 'Lebanese', 'Basotho', 'Liberian', 'Libyan', 'Liechtensteiner', 'Lithuanian']
+countries_list = []
 #input searched location and returns a dict with number of pages and number of subcategories
 def get_categories_ranking(searched_location):
   categories = get_wikipedia_categories(searched_location)
@@ -830,7 +1068,7 @@ def get_categories_ranking(searched_location):
   cat_without_articles = []
   bad_list = ['Articles with', 'CS1', 'Wikipedia', 'Webarchive', 'Short', 'Biography', 'Commons', 'Pages', 'Use', 'All', 'Articles', 'Coordinates', 'Engvar', 'Lang', 'Official']
   for c in categories:
-    if not any(c.startswith(word) for word in bad_list):
+    if not any(c.startswith(word) for word in bad_list) and not any(c.startswith(word) for word in countries_list) :
       cat_without_articles.append(c)
   try:
     categories_links = get_category_links(cat_without_articles)
@@ -842,6 +1080,49 @@ def get_categories_ranking(searched_location):
     cat_with_amount[category] =  (0, 0)
   sorted_dict = dict(sorted(cat_with_amount.items(), key=lambda x: x[1], reverse=True))
   return sorted_dict
+
+
+#input searched location and returns a dict with number of pages and number of subcategories
+# def get_categories_ranking(searched_location):
+#   categories = get_wikipedia_categories(searched_location)
+#   categories_links = []
+#   cat_without_articles = []
+#   bad_list = ['Articles with', 'CS1', 'Wikipedia', 'Webarchive', 'Short', 'Biography', 'Commons', 'Pages', 'Use', 'All', 'Articles', 'Coordinates', 'Engvar', 'Lang', 'Official']
+#   # test[searched_location] = searched_location
+#   # print("sl ", searched_location)
+#   # print("test ", test)
+#   # people_occupations = get_occupations(test)
+#   # print("occu get", people_occupations)
+#   for c in categories:
+#     # contains_bad_word = False
+#     # try:
+#     #   for word in bad_list:
+#     #     if word in c:
+#     #       contains_bad_word = True
+#     #       continue
+#     #   for name, val in people_occupations.items():
+#     #     if val in c:
+#     #       contains_bad_word = True
+#     #       continue
+#     # except Exception as e:
+#     #   print(e)
+#     # if contains_bad_word == False:
+#     #   cat_without_articles.append(c)
+
+#     if not any(c.startswith(word) for word in bad_list):
+#       # for name, val in people_occupations.items():
+#         # if val not in c:
+#       cat_without_articles.append(c)
+#   try:
+#     categories_links = get_category_links(cat_without_articles)
+#   except Exception as e:
+#       pass
+#   cat_with_amount = {}
+
+#   for category in categories_links:
+#     cat_with_amount[category] =  (0, 0)
+#   sorted_dict = dict(sorted(cat_with_amount.items(), key=lambda x: x[1], reverse=True))
+#   return sorted_dict
 
 #extract the category part from the wiki links
 def extract_last_parts(links):
@@ -923,34 +1204,66 @@ def combine_pv_cats(cat_dict, pv_dict):
   return tmp
 
 
-def get_categories(subject_dict):
-  categories_for_subject_dict= {}
-  rankings_for_categories_dict = {}
-  #creates a dict with all the dicts of each location with its categories and sub-categories
-  for subject, question in subject_dict.items():
-    try:
-      ranking = get_categories_ranking(subject)
-      ordict = OrderedDict(ranking)
-      rankings_for_categories_dict[subject] = ordict
-    except Exception as e:
-      pass
-  return rankings_for_categories_dict
+# def get_categories(subject_dict):
+#   categories_for_subject_dict= {}
+#   rankings_for_categories_dict = {}
+#   #creates a dict with all the dicts of each location with its categories and sub-categories
+#   for subject, question in subject_dict.items():
+#     try:
+#       ranking = get_categories_ranking(subject)
+#       ordict = OrderedDict(ranking)
+#       rankings_for_categories_dict[subject] = ordict
+#     except Exception as e:
+#       pass
+#   return rankings_for_categories_dict
 
 #given a dictionary with all the categories, the function returns the categories in a OrderedDict with the corresponding pageviews for each category
+# def get_pageviews_for_categories(cat_dict):
+#   pageviews_range_url = 'https://pageviews.wmcloud.org/?project=en.wikipedia.org&platform=all-access&agent=user&redirects=0&range=last-year&pages='
+#   all_cats_with_pvs = {}
+#   for subject in cat_dict:
+#     ord_dict = OrderedDict()
+#     ordered_dict_sub =  cat_dict[subject]
+#     links_list = [link for link in ordered_dict_sub.keys()]
+#     pruned_link_parts_list = extract_last_parts(links_list)
+#     concat_str_for_links = concatenate_elements(pruned_link_parts_list) #combine up to 10 of these links to create a request to pageview
+#     pageviews_url_list = combine_pv_urls(pageviews_range_url, concat_str_for_links) #now we have a list of pageview links with all the backlinks of the thumbcaption part of the wiki page (REUSED FROM YEARS PART)
+#     categories_with_pageviews =combine_dicts_from_links(pageviews_url_list) #now we called the links and retreieved the pageviews; saved them as a dictionary
+#     ordered_categories_with_pageviews = sort_dict_desc(categories_with_pageviews) #now the list is ordered in ascending order
+#     all_cats_with_pvs[subject] = OrderedDict(categories_with_pageviews)
+#   return all_cats_with_pvs
+
 def get_pageviews_for_categories(cat_dict):
-  pageviews_range_url = 'https://pageviews.wmcloud.org/?project=en.wikipedia.org&platform=all-access&agent=user&redirects=0&range=last-year&pages='
+  # pageviews_range_url = 'https://pageviews.wmcloud.org/?project=en.wikipedia.org&platform=all-access&agent=user&redirects=0&range=last-year&pages='
   all_cats_with_pvs = {}
   for subject in cat_dict:
     ord_dict = OrderedDict()
     ordered_dict_sub =  cat_dict[subject]
     links_list = [link for link in ordered_dict_sub.keys()]
     pruned_link_parts_list = extract_last_parts(links_list)
-    concat_str_for_links = concatenate_elements(pruned_link_parts_list) #combine up to 10 of these links to create a request to pageview
-    pageviews_url_list = combine_pv_urls(pageviews_range_url, concat_str_for_links) #now we have a list of pageview links with all the backlinks of the thumbcaption part of the wiki page (REUSED FROM YEARS PART)
-    categories_with_pageviews =combine_dicts_from_links(pageviews_url_list) #now we called the links and retreieved the pageviews; saved them as a dictionary
-    ordered_categories_with_pageviews = sort_dict_desc(categories_with_pageviews) #now the list is ordered in ascending order
-    all_cats_with_pvs[subject] = OrderedDict(categories_with_pageviews)
+
+    # print('pruned_link_parts_list')
+    # pprint.pprint(pruned_link_parts_list)
+
+    pvs = get_pageviews_from_list(pruned_link_parts_list)
+    # pprint.pprint(pvs)
+    # concat_str_for_links = concatenate_elements(pruned_link_parts_list) #combine up to 10 of these links to create a request to pageview
+    # pageviews_url_list = combine_pv_urls(pageviews_range_url, concat_str_for_links) #now we have a list of pageview links with all the backlinks of the thumbcaption part of the wiki page (REUSED FROM YEARS PART)
+    # print(pruned_link_parts_list)
+    # print(pageviews_range_url)
+    # print(concat_str_for_links)
+    # categories_with_pageviews =combine_dicts_from_links(pageviews_url_list) #now we called the links and retreieved the pageviews; saved them as a dictionary
+    # ordered_categories_with_pageviews = sort_dict_desc(categories_with_pageviews) #now the list is ordered in ascending order
+    try:
+      sor = dict(sorted(pvs.items(), key=lambda x: int(x[1].replace(',', '')),reverse = True))
+    except Exception as e: 
+      print(e)
+    # print(sor)
+
+    all_cats_with_pvs[subject] = OrderedDict(sor)
+
   return all_cats_with_pvs
+
 
 def sorting_dict(sor_dict):
   ret = {}
@@ -972,26 +1285,86 @@ def prune_ordered_dict(dictionary, n):
     pruned_dict[key] = OrderedDict(list(value.items())[:n])
   return pruned_dict
 
+# countries_list = ['Afghan', 'Albanian', 'Algerian', 'Andorran', 'Angolan', 'Argentinian', 'Armenian', 'Australian', 'Austrian', 'Azerbaijani', 'Bahamian', 'Bahraini', 'Bangladeshi', 'Barbadian', 'Belarusian', 'Belgian', 'Belizean', 'Beninese', 'Bhutanese', 'Bolivian', 'Bosnian', 'Motswana', 'Brazilian', 'Bruneian', 'Bulgarian', 'Burkinabe', 'Burundian', 'Cambodian', 'Cameroonian', 'Canadian', 'Cape Verdean', 'Central African', 'Chadian', 'Chilean', 'Chinese', 'Colombian', 'Comorian', 'Congolese', 'Congolese', 'Costa Rican', 'Croatian', 'Cuban', 'Cypriot', 'Czech', 'Danish', 'Djiboutian', 'Dominican', 'Dominican', 'East Timorese', 'Ecuadorian', 'Egyptian', 'Salvadoran', 'Equatorial Guinean', 'Eritrean', 'Estonian', 'Swazi', 'Ethiopian', 'Fijian', 'Finnish', 'French', 'Gabonese', 'Gambian', 'Georgian', 'German', 'Ghanaian', 'Greek', 'Grenadian', 'Guatemalan', 'Guinean', 'Guinea-Bissauan', 'Guyanese', 'Haitian', 'Honduran', 'Hungarian', 'Icelander', 'Indian', 'Indonesian', 'Iranian', 'Iraqi', 'Irish', 'Israeli', 'Italian', 'Jamaican', 'Japanese', 'Jordanian', 'Kazakhstani', 'Kenyan', 'I-Kiribati', 'North Korean', 'South Korean', 'Kuwaiti', 'Kyrgyzstani', 'Laotian', 'Latvian', 'Lebanese', 'Basotho', 'Liberian', 'Libyan', 'Liechtensteiner', 'Lithuanian']
+countries_list = []
+
 # function that takes a dictionary with an ordered dictionary as the value and prunes the ordered dictionary to keep only the first n entries and deltes certain categories:
+# def prune_and_ordered_dict(dictionary, n):
+#   pruned_dict = OrderedDict()
+#   inter1_dict= OrderedDict()
+#   bad_categories_list = ['Living_people', 'Living people', '_births', 'births', '_deaths', 'deaths', 'Good_articles', 'Good articles', 'Members','19th', '20th', '21st', 'Capitals in Europe', 'state capitals']
+#   print("dict", dictionary)
+#   obj = Test()
+#   sp = obj.get_person_questions_dict() 
+#   print(sp)
+#   sp =   gl_person_questions_dict_from_txt 
+#   print(sp)
+#   people_occupations = get_occupations(sp)
+#   print("occu prune", people_occupations)
+#   for key, value in dictionary.items():
+#     inter3_dict= OrderedDict()
+#     for link, tuplee in value.items():
+#       link_str = str(link)
+#       contains_bad_word = False
+#       try:
+#         for word in bad_categories_list:
+#           if word in link_str:
+#             contains_bad_word = True
+#             continue
+#         for word in countries_list:
+#           if word in link_str:
+#             contains_bad_word = True
+#             continue
+#         for name, val in people_occupations.items():
+#           if key == name:
+#             if val in link_str:
+#               contains_bad_word = True
+#               continue    
+#       except Exception as e:
+#         print("exception in def prune_and_ordered_dict", e)
+#       if contains_bad_word == False:
+#         inter3_dict[link] = tuplee
+#     pruned_dict[key] = inter3_dict
+#   for key, value in pruned_dict.items():
+#     inter1_dict[key] = OrderedDict(list(value.items())[:n])
+#   return inter1_dict
+
 def prune_and_ordered_dict(dictionary, n):
   pruned_dict = OrderedDict()
   inter1_dict= OrderedDict()
-  bad_categories_list = ['Living_people', 'Living people', '_births', 'births', '_deaths', 'deaths', 'Good_articles', 'Good articles', 'Members','19th', '20th', '21st', 'Capitals in Europe', 'state capitals']
+  # bad_categories_list = ['Living_people', 'Living people', '_births', 'births', '_deaths', 'deaths', 'Good_articles', 'Good articles', 'Members','19th', '20th', '21st', 'Capitals in Europe', 'state capitals']
+  bad_categories_list = ['Living_people', 'Living people', '_births', 'births', '_deaths', 'deaths', 'Good_articles', 'Good articles', 'Members','19th', 'Capitals in Europe', 'state capitals']
+
+  people_occupations = get_occupations(dictionary)
+  print("occu", people_occupations)
   for key, value in dictionary.items():
     inter3_dict= OrderedDict()
     for link, tuplee in value.items():
       link_str = str(link)
       contains_bad_word = False
-      for word in bad_categories_list:
-        if word in link_str:
-          contains_bad_word = True
-          continue
+      try:
+        for word in bad_categories_list:
+          if word in link_str:
+            contains_bad_word = True
+            continue
+        for word in countries_list:
+          if word in link_str:
+            contains_bad_word = True
+            continue
+        for name, val in people_occupations:
+          if key == name:
+            if val in link_str:
+              contains_bad_word = True
+              continue
+      except Exception as e:
+        print(e)
       if contains_bad_word == False:
         inter3_dict[link] = tuplee
     pruned_dict[key] = inter3_dict
   for key, value in pruned_dict.items():
     inter1_dict[key] = OrderedDict(list(value.items())[:n])
   return inter1_dict
+
 
 #find the 20 most appearing categories
 def find_most_common_links(data_dict):
@@ -1466,6 +1839,22 @@ def get_related_with_categories(person_questions_dict):
     ret[key] = value
   return ret
 
+
+# def order_dict_by_second_entry(data):
+#     ordered_data = {}
+#     intermediate_dict = {}
+#     for a,b in data.items():
+#       intermediate_ordere = {}
+#       for key, value in b.items():
+#         inter_list = []
+#         for cat in value.items():
+#           inter_list.append((cat[0], int(cat[1].replace(",", ""))))
+#         intermediate_ordere[key] = sorted(inter_list, key=lambda x: x[1], reverse=True)
+
+#       intermediate_dict[a] = intermediate_ordere
+#     return intermediate_dict
+
+
 """
 Converts a date string in the format '+YYYY-MM-DDT00:00:00Z' to 'DD.MM.YYYY' format,
 adds it to the list, and returns the modified list.
@@ -1638,33 +2027,135 @@ Args:     dictionary where the keys are the answer-entities and the value is a d
 Returns:  dictionary where the keys are the answer-entities and the value is
   a dict where the keys are the related-people and the valus are tupples with the 10 most popular categories they appear and with the pageviews of that category
 """
+# def get_categories_of_people_list(people_list, limit=5):
+#   return_dict = {}
+#   for key,value in people_list.items():
+#     related_people_orderd = dict(sorted(value.items(), key=lambda x: x[1], reverse=True))   #order the dict after the pageviews in descending order
+#     top_most_popular_people = dict(itertools.islice(related_people_orderd.items(), 5))      #take the top 5 most known people from the list
+#     if len(related_people_orderd) == 0 or  len(top_most_popular_people) == 0:
+#       continue
+#     categories_of_related_people = get_categories(top_most_popular_people)
+
+#     categories_with_pageviews_person = get_pageviews_for_categories(categories_of_related_people)
+#     categories_with_subs_and_pageviews_person = get_dict_for_every_location(categories_of_related_people, categories_with_pageviews_person)
+#     new_ordered_dict_related_person = sorting_dict(categories_with_subs_and_pageviews_person)
+#     copy_new_ordered_dict_person_test = prune_and_ordered_dict(new_ordered_dict_related_person, 10)
+#     ordered_dict_related_person = sorting_dict(copy_new_ordered_dict_person_test)
+#     return_dict[key] = ordered_dict_related_person
+#   return return_dict
+
 def get_categories_of_people_list(people_list, limit=5):
   return_dict = {}
-  for key,value in people_list.items():
+  newdic = {}
+  for a,b in people_list.items():
+    innerDic = OrderedDict()
+    for c,d in b.items():
+      innerDic[c] = int(d.replace(',', ''))
+  newdic[a] = dict(sorted(innerDic.items(), key = lambda x: x[1], reverse=True))
+
+  for key,value in newdic.items():
     related_people_orderd = dict(sorted(value.items(), key=lambda x: x[1], reverse=True))   #order the dict after the pageviews in descending order
+    pprint.pprint(related_people_orderd)
+    #add that certain categories cant be part of the list FOR PERFORMANCE REASONS
+
     top_most_popular_people = dict(itertools.islice(related_people_orderd.items(), 5))      #take the top 5 most known people from the list
+    pprint.pprint(top_most_popular_people)
+
     if len(related_people_orderd) == 0 or  len(top_most_popular_people) == 0:
       continue
     categories_of_related_people = get_categories(top_most_popular_people)
     categories_with_pageviews_person = get_pageviews_for_categories(categories_of_related_people)
     categories_with_subs_and_pageviews_person = get_dict_for_every_location(categories_of_related_people, categories_with_pageviews_person)
-    new_ordered_dict_related_person = sorting_dict(categories_with_subs_and_pageviews_person)
-    copy_new_ordered_dict_person_test = prune_and_ordered_dict(new_ordered_dict_related_person, 10)
-    ordered_dict_related_person = sorting_dict(copy_new_ordered_dict_person_test)
-    return_dict[key] = ordered_dict_related_person
+    pprint.pprint(categories_with_subs_and_pageviews_person, sort_dicts=False)
+    copy_new_ordered_dict_person_test = prune_and_ordered_dict(categories_with_subs_and_pageviews_person, 10)
+    pprint.pprint(copy_new_ordered_dict_person_test, sort_dicts=False)
+    return_dict[key] = copy_new_ordered_dict_person_test
+  return_dict = order_dict_by_second_entry(return_dict)
   return return_dict
+
+
+# def get_categories_of_people_list(people_list, limit=5):
+#   return_dict = {}
+
+#   newdic = {}
+#   for a,b in people_list.items():
+#     innerDic = OrderedDict()
+#     for c,d in b.items():
+#       innerDic[c] = int(d.replace(',', ''))
+#   newdic[a] = dict(sorted(innerDic.items(), key = lambda x: x[1], reverse=True))
+
+#   for key,value in newdic.items():
+#     related_people_orderd = dict(sorted(value.items(), key=lambda x: x[1], reverse=True))   #order the dict after the pageviews in descending order
+#     # pprint.pprint(related_people_orderd)
+
+#     top_most_popular_people = dict(itertools.islice(related_people_orderd.items(), 5))      #take the top 5 most known people from the list
+#     # pprint.pprint(top_most_popular_people)
+
+#     if len(related_people_orderd) == 0 or  len(top_most_popular_people) == 0:
+#       continue
+#     categories_of_related_people = get_categories(top_most_popular_people)
+#     categories_with_pageviews_person = get_pageviews_for_categories(categories_of_related_people)
+#     categories_with_subs_and_pageviews_person = get_dict_for_every_location(categories_of_related_people, categories_with_pageviews_person)
+#     copy_new_ordered_dict_person_test = prune_and_ordered_dict(categories_with_subs_and_pageviews_person, 10)
+#     pprint.pprint(copy_new_ordered_dict_person_test, sort_dicts=False)
+#     return_dict[key] = copy_new_ordered_dict_person_test
+#   return_dict = order_dict_by_second_entry(return_dict)
+#   return return_dict
 
 """
 Function that is created with help of reusable function from above
 Args:     person_question_dict with all people with their questions
 Returns:  dictionary where the keys are the answer-entities and the value is a OrderedDict of all categories with pageviews
 """
+# def get_categories_with_pv_answerEntities(person_questions_dict):
+#   cat_ranking_person = get_categories(person_questions_dict)
+#   cat_with_pv_person = get_pageviews_for_categories(cat_ranking_person)
+#   categories_with_subs_and_pageviews_person = get_dict_for_every_location(cat_ranking_person, cat_with_pv_person)
+#   new_ordered_dict_person = sorting_dict(categories_with_subs_and_pageviews_person)
+#   return new_ordered_dict_person
 def get_categories_with_pv_answerEntities(person_questions_dict):
   cat_ranking_person = get_categories(person_questions_dict)
   cat_with_pv_person = get_pageviews_for_categories(cat_ranking_person)
   categories_with_subs_and_pageviews_person = get_dict_for_every_location(cat_ranking_person, cat_with_pv_person)
-  new_ordered_dict_person = sorting_dict(categories_with_subs_and_pageviews_person)
-  return new_ordered_dict_person
+  # new_ordered_dict_person = sorting_dict(categories_with_subs_and_pageviews_person)
+
+  intermediate_dict = {}
+  intermediate_ordere = {}
+  for a,b in categories_with_subs_and_pageviews_person.items():
+    inter_list = []
+    for key in b.items():
+      inter_list.append((key[0], int(key[1].replace(",", ""))))
+    intermediate_ordere[a] = OrderedDict(sorted(inter_list, key=lambda x: x[1], reverse=True))
+
+  return intermediate_ordere
+
+
+
+
+def order_dict_by_second_entry(data):
+    ordered_data = {}
+    intermediate_dict = {}
+    for a,b in data.items():
+      intermediate_ordere = {}
+      for key, value in b.items():
+        inter_list = []
+        for cat in value.items():
+          inter_list.append((cat[0], int(cat[1].replace(",", ""))))
+        intermediate_ordere[key] = sorted(inter_list, key=lambda x: x[1], reverse=True)
+
+      intermediate_dict[a] = intermediate_ordere
+    return intermediate_dict
+
+
+
+
+
+
+
+
+
+
+
 
 """
 Counts the occurrences of categories (links) in the input dictionary.
@@ -1673,31 +2164,73 @@ Returns: dict: A new dictionary where the keys are the category links and the va
   the corresponding tuples of the category with a middle value indicating how
   often the link/category appeared in the other keys.
 """
+# def count_categories(related_people_with_categories, answer_entities_with_categories):
+#   category_appereances = {}
+#   for answerEntityKey, aeCategory in answer_entities_with_categories.items():
+#     inner_dict = {}
+#     for answerKey, relatedDict in related_people_with_categories.items():
+#       if answerEntityKey == answerKey:
+#         for catLink, tupl in aeCategory.items():
+#           people_list = []
+#           for relatedPersonKey, catWithPvs in relatedDict.items():
+#             for relatedLink, relatedTupl in  catWithPvs.items():
+#               if catLink == relatedLink:
+#                 rel_pers_str = str(relatedPersonKey)
+#                 if rel_pers_str not in people_list and catLink == relatedLink:
+#                   people_list.append(rel_pers_str)
+#                 inner_dict[relatedLink] = (len(people_list),relatedTupl, people_list)
+#     category_appereances[answerEntityKey] = inner_dict
+#   for k,v in category_appereances.items():
+#     if len(v) == 0:
+#       for answerEntityKey, aeCategory in answer_entities_with_categories.items():
+#         if k == answerEntityKey:
+#           inner_dict={}
+#           for a,b in aeCategory.items():
+#             inner_dict[a] = (0, b, [])
+#           category_appereances[k] = inner_dict
+#   return category_appereances
+"""
+Counts the occurrences of categories (links) in the input dictionary.
+Args: data (dict): A dictionary containing category links as keys and tuples as values.
+Returns: dict: A new dictionary where the keys are the category links and the values are
+  the corresponding tuples of the category with a middle value indicating how
+  often the link/category appeared in the other keys.
+"""
 def count_categories(related_people_with_categories, answer_entities_with_categories):
+
   category_appereances = {}
   for answerEntityKey, aeCategory in answer_entities_with_categories.items():
     inner_dict = {}
     for answerKey, relatedDict in related_people_with_categories.items():
       if answerEntityKey == answerKey:
-        for catLink, tupl in aeCategory.items():
+        for cat, pvs in aeCategory.items():
           people_list = []
+          # print("cat: "+ str(cat))
           for relatedPersonKey, catWithPvs in relatedDict.items():
-            for relatedLink, relatedTupl in  catWithPvs.items():
-              if catLink == relatedLink:
+            for categ in catWithPvs:
+              if categ[0] == cat:
+                print(cat, categ, answerEntityKey, relatedPersonKey)
                 rel_pers_str = str(relatedPersonKey)
-                if rel_pers_str not in people_list and catLink == relatedLink:
+                if rel_pers_str not in people_list and categ[0] == cat:
                   people_list.append(rel_pers_str)
-                inner_dict[relatedLink] = (len(people_list),relatedTupl, people_list)
+                inner_dict[cat] = (len(people_list),categ, people_list)
+
     category_appereances[answerEntityKey] = inner_dict
-  for k,v in category_appereances.items():
-    if len(v) == 0:
-      for answerEntityKey, aeCategory in answer_entities_with_categories.items():
-        if k == answerEntityKey:
-          inner_dict={}
-          for a,b in aeCategory.items():
-            inner_dict[a] = (0, b, [])
-          category_appereances[k] = inner_dict
+
+    for k,v in category_appereances.items():
+      if len(v) == 0:
+        for answerEntityKey, aeCategory in answer_entities_with_categories.items():
+          if k == answerEntityKey:
+            inner_dict={}
+            for a,b in aeCategory.items():
+              inner_dict[a] = (0, b, [])
+            category_appereances[k] = inner_dict
+
   return category_appereances
+
+
+
+
 
 """
 Calculates the Intersection over Union between the answer-entity and each of the related-person entries seperately
@@ -1825,14 +2358,19 @@ def get_person_hints_unexpected_categories(person_answers_dict):
   for key,value in person_answers_dict.items():
     related_people_dict[key] = get_related_people_from_person_name(key)
   #time saving for second part (related peoples with pageviews and ordering) - 16m (6-7m)
-  for key,value in related_people_dict.items():
-    inter_link_list = []
-    for item in value:
-      inter_link_list.append(item['url'])
-    related_people_link_dict[key] = inter_link_list
-    related_people_pageviews_dict = get_pageviews_from_links(related_people_link_dict)
+  # for key,value in related_people_dict.items():
+  #   inter_link_list = []
+  #   for item in value:
+  #     inter_link_list.append(item['url'])
+  #   related_people_link_dict[key] = inter_link_list
+  #   related_people_pageviews_dict = get_pageviews_from_links(related_people_link_dict)
+
+  # pprint.pprint(related_people_dict)
+  related_people_pageviews_dict = get_pageviews_from_linkssssssss(related_people_dict)
+  pprint.pprint(related_people_pageviews_dict)
   #time saving for third part (related peoples categories recovery and ordering) - 43m+ (14m-24m)
   most_popular_related_people_with_categories = get_categories_of_people_list(related_people_pageviews_dict)
+
   #time saving for third part retrieves the categories of the answer-entities - 9m+ (6m)
   answer_entities_with_categories = get_categories_with_pv_answerEntities(person_answers_dict)
   #time saving for fourth part counts the categories of the answer-entities - 3s
@@ -1843,6 +2381,8 @@ def get_person_hints_unexpected_categories(person_answers_dict):
     tmp = OrderedDict(value)
     ordered_data[key] = OrderedDict(sorted(tmp.items(), key=lambda x: x[1][0], reverse=True) )
   counted_category_apperances = ordered_data
+
+
   #1. calculate the IoU between max and every other person - (M,C) = 5/20; (M,L) = 2/20; (M,D) = 2/20; (M,A) = 2/20; (M,F) = 2/20;
   intersection_between_people_with_ae = calculate_IoU_from_countedCategoryDict(counted_category_apperances)
   #2. calculate the average diversity between the 6 drivers - (20-5) + (20-2) + (20-2) + (20-2) + (20-2) = 87; (#avg_diversity/#pairwise_comparison) = 87/5 = 17,4
@@ -1951,6 +2491,10 @@ def get_table_info_requests(url):
   for row in rows[1:]:
     data.append([cell.text.strip() for cell in row.find_all('td')])
   return (headers, data)
+
+
+
+
 
 """
 Given a Wikipedia URL, and a section of this article, returns an array of dictionaries containing the href, title, and description of each link on that section of the page.
@@ -2215,24 +2759,45 @@ def get_year_thumbcaption_hints(qa_dict):
 """
 Given a URL, this function opens the url and retrieves all tables on the page.
 """
-def get_all_tables(url):
-  options = webdriver.FirefoxOptions()
-  options.add_argument('--headless')
-  driver = webdriver.Firefox(options=options)
-  driver.get(url)
-  time.sleep(1) # Wait for the page to load completely
-  soup = BeautifulSoup(driver.page_source, 'html.parser')
-  driver.quit()
-  tables = soup.find_all('table')
-  all_tables = []
-  for table in tables:
-    rows = table.find_all('tr')
-    headers = [header.text.strip() for header in rows[0].find_all('th')]
-    data = []
-    for row in rows[1:]:
-      data.append([cell.text.strip() for cell in row.find_all('td')])
-    all_tables.append({'headers': headers, 'data': data})
-  return all_tables
+# def get_all_tables(url):
+#   options = webdriver.FirefoxOptions()
+#   # options.set_preference("pdfjs.disabled", True)
+#   options.add_argument('--headless')
+#   driver = webdriver.Firefox(options=options)
+#   driver.get(url)
+#   time.sleep(1) # Wait for the page to load completely
+#   soup = BeautifulSoup(driver.page_source, 'html.parser')
+#   driver.quit()
+#   tables = soup.find_all('table')
+#   all_tables = []
+#   for table in tables:
+#     rows = table.find_all('tr')
+#     headers = [header.text.strip() for header in rows[0].find_all('th')]
+#     data = []
+#     for row in rows[1:]:
+#       data.append([cell.text.strip() for cell in row.find_all('td')])
+#     all_tables.append({'headers': headers, 'data': data})
+#   return all_tables
+
+
+# import pandas as pd
+# import wikipedia as wp
+
+def get_all_tables(page_name, table_number=2):
+
+  html = wikipedia.page(page_name).html().encode("UTF-8")
+  try: 
+      df = pd.read_html(html)[ table_number]  # Try 2nd table first as most pages contain contents table first
+      print(df)
+  except IndexError:
+      df = pd.read_html(html)[0]
+      print(df)
+
+
+  return df
+
+
+
 
 """
 Extracts the first element from each sublist in the 'data' list of lists in a dictionary and returns them in a separate list.
@@ -2317,80 +2882,184 @@ def create_city_dict(city_list):
       city_dict[year] = ' '.join(city_name)
   return city_dict
 
+def remove_after_first_opening_bracket(s):
+  index = s.find('[')
+  if index != -1:
+      s = s[:index]
+  return s
+
+
+
+
+# #get the dict of all the champions league winners
+# def champions_league_winners_list():
+#   champions_league_url = 'https://en.wikipedia.org/wiki/List_of_European_Cup_and_UEFA_Champions_League_finals#List_of_finals'
+#   all = get_all_tables(champions_league_url) #gets all tables of wiki page
+
+#   #first prune of that huge dict
+#   keyw= 'showvteEuropean Cup and UEFA Champions League winners'
+#   pruned_dict = prune_dict_list(all,keyw)
+#   #second prune
+#   inter = pruned_dict.get('data')
+#   cl_list = inter[2:5] + inter[7:11]
+#   tmp1 = create_list_from_list_of_lists_key(cl_list, '\n')
+#   tmp2 = create_dict_from_list_of_lists(tmp1)
+#   return tmp2
+
 #get the dict of all the champions league winners
 def champions_league_winners_list():
-  champions_league_url = 'https://en.wikipedia.org/wiki/List_of_European_Cup_and_UEFA_Champions_League_finals#List_of_finals'
-  all = get_all_tables(champions_league_url) #gets all tables of wiki page
-  #first prune of that huge dict
-  keyw= 'showvteEuropean Cup and UEFA Champions League winners'
-  pruned_dict = prune_dict_list(all,keyw)
-  #second prune
-  inter = pruned_dict.get('data')
-  cl_list = inter[2:5] + inter[7:11]
-  tmp1 = create_list_from_list_of_lists_key(cl_list, '\n')
-  tmp2 = create_dict_from_list_of_lists(tmp1)
-  return tmp2
+  champions_league_url = 'List_of_European_Cup_and_UEFA_Champions_League_finals'
+  file = get_all_tables(champions_league_url) #gets all tables of wiki page
 
-#get the dict of all the euros winners
+  champions_league_dict =  dict(zip(file['Season'], file['Winners']))
+  champions_league_dict1 = {}
+  # print(champions_league_dict)
+
+  for a,b in champions_league_dict.items():
+    old_substring = "â\\x80\\x93"
+    new_substring = '/'
+    new_string = a.replace(old_substring, new_substring)
+    old_substring = "â"
+    new_substring = '/'
+    new_string1 = new_string.replace(old_substring, new_substring)
+
+    champions_league_dict1[new_string1] = b
+  return champions_league_dict1
+
+#get the dict of all the champions league winners
 def uefa_euros_winners_list():
-  euros_url = 'https://en.wikipedia.org/wiki/List_of_UEFA_European_Championship_finals#List_of_finals'
-  all = get_all_tables(euros_url) #gets all tables of wiki page
-  #first prune of that huge dict
-  keyw= 'showvteUEFA European Championship winners'
-  pruned_dict = prune_dict_list(all,keyw)
-  #second prune
-  inter = pruned_dict.get('data')
-  tmp1 = create_list_from_list_of_lists_key(inter, '\n')
-  tmp2 = create_dict_from_list_of_lists(tmp1)
-  return tmp2
+  euros_url = 'List_of_UEFA_European_Championship_finals#List_of_finals'
+  file = get_all_tables(euros_url) #gets all tables of wiki page
 
-#get the dict of all the wold cup winners
+  euros_dict =  dict(zip(file['Tournament'], file['Winners']))
+
+  return euros_dict
+
+  # #first prune of that huge dict
+  # keyw= 'showvteEuropean Cup and UEFA Champions League winners'
+  # pruned_dict = prune_dict_list(all,keyw)
+  # #second prune
+  # inter = pruned_dict.get('data')
+  # cl_list = inter[2:5] + inter[7:11]
+  # tmp1 = create_list_from_list_of_lists_key(cl_list, '\n')
+  # tmp2 = create_dict_from_list_of_lists(tmp1)
+  # return tmp2
+
+# #get the dict of all the euros winners
+# def uefa_euros_winners_list():
+#   euros_url = 'https://en.wikipedia.org/wiki/List_of_UEFA_European_Championship_finals#List_of_finals'
+#   all = get_all_tables(euros_url) #gets all tables of wiki page
+#   #first prune of that huge dict
+#   keyw= 'showvteUEFA European Championship winners'
+#   pruned_dict = prune_dict_list(all,keyw)
+#   #second prune
+#   inter = pruned_dict.get('data')
+#   tmp1 = create_list_from_list_of_lists_key(inter, '\n')
+#   tmp2 = create_dict_from_list_of_lists(tmp1)
+#   return tmp2
+
+
 def uefa_worlds_winners_list():
-  worlds_url = 'https://en.wikipedia.org/wiki/List_of_FIFA_World_Cup_finals#List_of_final_matches'
-  all = get_all_tables(worlds_url) #gets all tables of wiki page
-  tmp3=get_first_elements(all[3])
-  #first prune of that huge dict
-  keyw= 'showvteFIFA World Cup'
-  pruned_dict = prune_dict_list(all,keyw)
-  #second prune
-  inter = pruned_dict.get('data')
-  inter = inter[2]
-  years = [s for s in inter[0].split('\n')]
-  my_dict = dict(zip(years, tmp3))
-  return my_dict
+  worlds_url = 'List_of_FIFA_World_Cup_finals#List_of_final_matches'
+  world_file = get_all_tables(worlds_url, 3) #gets all tables of wiki page
+  worlds_dict =  dict(zip(world_file['Year'], world_file['Winners']))
 
-#get the dict of all the F1 drivers world champions
+  return worlds_dict
+
+# #get the dict of all the wold cup winners
+# def uefa_worlds_winners_list():
+#   worlds_url = 'https://en.wikipedia.org/wiki/List_of_FIFA_World_Cup_finals#List_of_final_matches'
+#   all = get_all_tables(worlds_url) #gets all tables of wiki page
+#   tmp3=get_first_elements(all[3])
+#   #first prune of that huge dict
+#   keyw= 'showvteFIFA World Cup'
+#   pruned_dict = prune_dict_list(all,keyw)
+#   #second prune
+#   inter = pruned_dict.get('data')
+#   inter = inter[2]
+#   years = [s for s in inter[0].split('\n')]
+#   my_dict = dict(zip(years, tmp3))
+#   return my_dict
+
+# #get the dict of all the F1 drivers world champions
+# def f1_winners_list():
+#   euros_url = 'https://en.wikipedia.org/wiki/List_of_Formula_One_World_Drivers%27_Champions#By_season'
+#   all = get_all_tables(euros_url) #gets all tables of wiki page
+#   lst = all[2].get('data')
+#   tmp2 = get_year_with_driver(lst)
+#   tmp2 = clean_driver_names(tmp2)
+#   return tmp2
+
 def f1_winners_list():
-  euros_url = 'https://en.wikipedia.org/wiki/List_of_Formula_One_World_Drivers%27_Champions#By_season'
-  all = get_all_tables(euros_url) #gets all tables of wiki page
-  lst = all[2].get('data')
-  tmp2 = get_year_with_driver(lst)
-  tmp2 = clean_driver_names(tmp2)
-  return tmp2
+  f1_url = 'List_of_Formula_One_World_Drivers%27_Champions'
+  f1_file = get_all_tables(f1_url) #gets all tables of wiki page
+  print(f1_file)
+  try:
+    a = f1_file['Season']['Season']
+    b= f1_file['Driver']['Driver']
+    for key, value in a.items():
+      a[key] = remove_after_first_opening_bracket(value)
+    for key, value in b.items():
+      b[key] = remove_after_first_opening_bracket(value)
+  except Exception as e:
+    print(e)
 
-#get the dict of all summer olympics host cities
+  f1_dict =  dict(zip(a, b))
+  return f1_dict
+
+
+# #get the dict of all summer olympics host cities
+# def summer_olympics_hosts_list():
+#   summerO_url = 'https://en.wikipedia.org/wiki/Summer_Olympic_Games#List_of_Summer_Olympic_Games'
+#   all = get_all_tables(summerO_url) #gets all tables of wiki page
+#   lst = all[10].get('data')
+#   tmp1 = create_list_from_list_of_lists_key(lst, '\n')
+#   tmp1 = tmp1[0]
+#   tmp1 = create_dict_from_list(tmp1)
+#   tmp1 = clean_dict_keys(tmp1)
+#   tmp1 = clean_driver_names(tmp1)
+#   return tmp1
+
 def summer_olympics_hosts_list():
-  summerO_url = 'https://en.wikipedia.org/wiki/Summer_Olympic_Games#List_of_Summer_Olympic_Games'
-  all = get_all_tables(summerO_url) #gets all tables of wiki page
-  lst = all[10].get('data')
-  tmp1 = create_list_from_list_of_lists_key(lst, '\n')
-  tmp1 = tmp1[0]
-  tmp1 = create_dict_from_list(tmp1)
-  tmp1 = clean_dict_keys(tmp1)
-  tmp1 = clean_driver_names(tmp1)
-  return tmp1
+  summer_url = 'Summer_Olympic_Games'
+  summer_file = get_all_tables(summer_url, 6) #gets all tables of wiki page
+  a = summer_file['Olympiad']['Olympiad']
+  b = summer_file['Host']['Host']
+  for key, value in a.items():
+    a[key] = remove_after_first_opening_bracket(value)
+  for key, value in b.items():
+    b[key] = remove_after_first_opening_bracket(value)
 
-#get the dict of all winter olympics host cities
+  summer_dict =  dict(zip(a, b))
+  return summer_dict
+
+# #get the dict of all winter olympics host cities
+# def winter_olympics_hosts_list():
+#   winterO_url = 'https://en.wikipedia.org/wiki/Winter_Olympic_Games#List_of_Winter_Olympic_Games'
+#   all = get_all_tables(winterO_url) #gets all tables of wiki page
+#   lst = all[8].get('data')
+#   tmp1 = create_list_from_list_of_lists_key(lst, '\n')
+#   tmp1 = tmp1[0]
+#   tmp1 = create_dict_from_list(tmp1)
+#   tmp1 = clean_dict_keys(tmp1)
+#   tmp1 = clean_driver_names(tmp1)
+#   return tmp1
+
 def winter_olympics_hosts_list():
-  winterO_url = 'https://en.wikipedia.org/wiki/Winter_Olympic_Games#List_of_Winter_Olympic_Games'
-  all = get_all_tables(winterO_url) #gets all tables of wiki page
-  lst = all[8].get('data')
-  tmp1 = create_list_from_list_of_lists_key(lst, '\n')
-  tmp1 = tmp1[0]
-  tmp1 = create_dict_from_list(tmp1)
-  tmp1 = clean_dict_keys(tmp1)
-  tmp1 = clean_driver_names(tmp1)
-  return tmp1
+  winter_url = 'Winter_Olympic_Games'
+  winter_file = get_all_tables(winter_url, 4) #gets all tables of wiki page
+  a = winter_file['Year']['Year']['Amateur era']
+  b = winter_file['Host']['Host']['Amateur era']
+
+  for key, value in a.items():
+    a[key] = remove_after_first_opening_bracket(value)
+  for key, value in b.items():
+    b[key] = remove_after_first_opening_bracket(value)
+
+  winter_dict =  dict(zip(a, b))
+  return winter_dict
+
+# print(winter_olympics_hosts_list())
 
 
 #write all of the winners of the different sports categories into lists
@@ -2420,19 +3089,19 @@ def popular_sports_per_year(years_list):
     }
   # UEFA Champions League: Create the sentences like (In the same-, the following-, the previous-year)
     for key in cl_all:
-      if int(key.split('-')[1]) == year % 100:
+      if int(key.split('/')[1]) == year % 100:
         result = cl_all[key]
         break
     if result:
       year_dict['cl'] = basic_sentences[0] + result + sport_sentences[0]
     for key in cl_all:
-      if int(key.split('-')[1]) == (year - 1) % 100:
+      if int(key.split('/')[1]) == (year - 1) % 100:
         result = cl_all[key]
         break
     if result:
       year_dict['p_cl'] = basic_sentences[1] + result + sport_sentences[0]
     for key in cl_all:
-      if int(key.split('-')[1]) == (year + 1) % 100:
+      if int(key.split('/')[1]) == (year + 1) % 100:
         result = cl_all[key]
         break
     if result:
@@ -2494,19 +3163,19 @@ def popular_sports_per_year(years_list):
       if year_int in d:
         year_dict['f_summer'] = olympic_sentences[2] + summer_olympics_all[year_int]
   # Winter Olympic Games: Create the sentences like (In the same-, the following-, the previous-year)
-    for d in winter_olympics_all:
-      if year_s in d:
-        year_dict['winter'] = olympic_sentences[3] + winter_olympics_all[year_s]
-    for d in winter_olympics_all:
+    for a,b in winter_olympics_all.items():
+      if str(year) in a:
+        year_dict['winter'] = olympic_sentences[3] + b
+    for a,b in winter_olympics_all.items():
       t = year - 1
-      year_int = str(t)
-      if year_int in d:
-        year_dict['p_winter'] = olympic_sentences[4] + winter_olympics_all[year_int]
-    for d in winter_olympics_all:
+      year_str = str(t)
+      if year_str in a:
+        year_dict['winter'] = olympic_sentences[4] + b
+    for a,b in winter_olympics_all.items():
       t = year + 1
-      year_int = str(t)
-      if year_int in d:
-        year_dict['f_winter'] = olympic_sentences[5] + winter_olympics_all[year_int]
+      year_str = str(t)
+      if year_str in a:
+        year_dict['winter'] = olympic_sentences[5] + b
     #write the entry in the dict
     pop_sport_hints_year[year] = year_dict
   return pop_sport_hints_year
@@ -2708,11 +3377,15 @@ def generate_hints_years(qa_dict):
   pop_vizgr_hints = get_year_vizgr_hints(qa_dict)
   years_hints = {}
 
-  # year_dict = {
-  #   'sports': years_hints,
-  #   'thumbcaption':years_hints,
-  #   'vizgr' : years_hints
-  # }
+  pprint.pprint(pop_year_hints)
+  pprint.pprint(pop_vizgr_hints)
+
+
+
+  year_dict = {
+    'sports': years_hints,
+    'vizgr' : years_hints
+  }
 
   for y in pop_year_hints:
     year_dict= {}

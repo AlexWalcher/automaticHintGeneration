@@ -19,9 +19,12 @@ directory = "tmp" # Directory
 parent_dir = "/content/automaticHintGeneration" # Parent Directory path
 path = os.path.join(parent_dir, directory) # Path
 
+apt_install('apt-transport-https')
 install('selenium')
 apt_install('firefox')
-apt_install('firefox-geckodriver')
+install('webdrivermanager')
+# apt_install('firefox-geckodriver')
+# install('geckodriver-autoinstaller')
 install('sparqlwrapper')
 install('pageviewapi')
 install('sentence-transformers')
@@ -56,6 +59,10 @@ from bs4 import BeautifulSoup, NavigableString, Tag
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 from selenium import webdriver
+from selenium.webdriver import Firefox
+
+
+
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse, parse_qs
 from collections import OrderedDict
@@ -65,6 +72,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import torch
 from transformers import AutoTokenizer, AutoModel
+from webdrivermanager import GeckoDriverManager
 
 from pathlib import Path
 import subprocess
@@ -80,3 +88,32 @@ from streamlit_option_menu import option_menu
 print("\n")
 print("finished imports")
 print("\n")
+
+
+gl_person_questions_dict_from_txt = {}
+# gl_location_questions_dict = {}
+# gl_year_questions_dict = {}
+
+class Test:
+  def __init__(self):
+    self.gl_person_questions_dict = {}
+    self.gl_location_questions_dict = {}
+    self.gl_year_questions_dict = {}
+
+  def get_person_questions_dict(self):
+    return self.gl_person_questions_dict
+
+  def set_person_questions_dict(self, value):
+    self.gl_person_questions_dict = value
+
+  def get_location_questions_dict(self):
+    return self.gl_location_questions_dict
+
+  def set_location_questions_dict(self, value):
+    self.gl_location_questions_dict = value
+
+  def get_year_questions_dict(self):
+    return self.gl_year_questions_dict
+
+  def set_year_questions_dict(self, value):
+    self.gl_year_questions_dict = value
