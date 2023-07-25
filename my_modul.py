@@ -1,4 +1,3 @@
-# # -*- coding: utf-8 -*-
 """
 File that contains the final hint generation functions where all of the one from the functionsHintGeneration file are orchestrated to work together.
 """
@@ -24,12 +23,17 @@ location_df = df_list["location"]
 # Save the results in a txt file
 def generate_hints_from_xlsx(file_path):
   df_list = load_file_path(file_path)
+  obj = Test()
   year_df = df_list["year"]
   person_df = df_list["person"]
   location_df = df_list["location"]
   year_questions_dict = dict(zip(year_df['Answer'], year_df['Question']))
+  obj.set_year_questions_dict(year_questions_dict)
   person_questions_dict = dict(zip(person_df['Answer'], person_df['Question']))
+  obj.set_person_questions_dict(person_questions_dict)
+  gl_person_questions_dict_from_txt = person_questions_dict
   location_questions_dict = dict(zip(location_df['Answer'], location_df['Question']))
+  obj.set_location_questions_dict(location_questions_dict)
   generated_hint_sentences = {}
   combined_hint_sentences = {}
   #generates the hints for the YEARS question
@@ -50,6 +54,7 @@ def generate_hints_from_xlsx(file_path):
   location_hints['properties'] = location_hints_fixed_properties
   generated_hint_sentences['locations'] = location_hints
   return generated_hint_sentences
+
 
 def save_file():
   # Read the Excel file into a DataFrame
@@ -75,8 +80,7 @@ def read_properties_from_file(file_path):
   except FileNotFoundError:
     print(f"File not found at path: {file_path}")
   
-  print(question, answer)
-
+  # print(question, answer)
   question = question.replace(";", "")
 
   return question, answer
@@ -85,10 +89,12 @@ def read_properties_from_file(file_path):
 def generate_hints_from_txt(file_path):
   generated_hint_sentences = {}
   inter = read_properties_from_file(file_path)
+  obj = Test()
+
 
   question = inter[0]
   answer = inter[1]
-  print(question, answer)
+  # print(question, answer)
 
   if "Year" in file_path:
     #generates the hints for the YEARS question
@@ -97,27 +103,33 @@ def generate_hints_from_txt(file_path):
     year_as_txt = str(answer)
     year_questions_dict = {}
     year_questions_dict[year_as_int] = question
+    obj.set_year_questions_dict(year_questions_dict)
     # pprint.pprint(year_questions_dict)
     years_hints = generate_hints_years(year_questions_dict)
+    # inter = check_sentences_for_asterisk(years_hints)
     generated_hint_sentences['years'] = years_hints
   elif "Location" in file_path:
     #generates the hints for the LOCATION question
     location_questions_dict = {}
     location_questions_dict[answer] = question
+    obj.set_location_questions_dict(location_questions_dict)
     # dataLocation.append(location_questions_dict)
     # pprint.pprint(location_questions_dict)
-    location_hints_unexpected_categories = get_location_hints_unexpected_categories(location_questions_dict)
+    # location_hints_unexpected_categories = get_location_hints_unexpected_categories(location_questions_dict)
     location_hints_fixed_properties = get_location_hints_fixed_properties(location_questions_dict)
     location_hints = {}
-    location_hints['categories'] = location_hints_unexpected_categories
+    # location_hints['categories'] = location_hints_unexpected_categories
     location_hints['properties'] = location_hints_fixed_properties
     generated_hint_sentences['locations'] = location_hints
   elif "Person" in file_path:
     #generates the hints for the PEOPLE question
     person_questions_dict ={}
     person_questions_dict[answer] = question
+    obj.set_person_questions_dict(person_questions_dict)
+    gl_person_questions_dict_from_txt = person_questions_dict
+
     # dataPerson.append(person_questions_dict)
-    pprint.pprint(person_questions_dict)
+    # pprint.pprint(person_questions_dict)
     people_hints_unexpected_categories = get_person_hints_unexpected_categories(person_questions_dict)
     people_hints_unexpected_predicates = get_person_hints_unexpected_predicates(person_questions_dict)
     people_hints = {}
