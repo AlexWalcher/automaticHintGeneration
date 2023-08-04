@@ -161,13 +161,16 @@ Given a URL, this function opens the url and retrieves the information stored in
 #   return (headers, data)
 
 def get_table_info(url, table_number=2):
+  
+  test= url.lower()
+  print("get_table_info URL:", url, test)
 
-  html = wikipedia.page(url).html().encode("UTF-8")
+  html = wikipedia.page(test).html().encode("UTF-8")
+
   try: 
-      df = pd.read_html(html)[ table_number]  # Try 2nd table first as most pages contain contents table first
+    df = pd.read_html(html)[ table_number]  # Try 2nd table first as most pages contain contents table first
   except IndexError:
-      df = pd.read_html(html)[0]
-
+    df = pd.read_html(html)[0]
   return df
 
 
@@ -698,7 +701,7 @@ def get_location_hints_unexpected_categories(location_answers_dict):
     for item in value:
       inter_link_list.append(item['url'])
     related_location_link_dict[key] = inter_link_list
-    related_location_pageviews_dict = get_pageviews_from_links(related_location_link_dict)
+    related_location_pageviews_dict = get_pageviews_from_linkssssssss(related_location_link_dict)
   # pprint.pprint(related_location_pageviews_dict)
   #time saving for third part (related locations categories recovery and ordering) - 43m+ (14m-24m)
   most_popular_related_location_with_categories = get_categories_of_people_list(related_location_pageviews_dict)
