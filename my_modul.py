@@ -47,10 +47,10 @@ def generate_hints_from_xlsx(file_path):
   people_hints['predicates'] = people_hints_unexpected_predicates
   generated_hint_sentences['people'] = people_hints
   #generates the hints for the LOCATION question
-  location_hints_unexpected_categories = get_location_hints_unexpected_categories(location_questions_dict)
+  # location_hints_unexpected_categories = get_location_hints_unexpected_categories(location_questions_dict)
   location_hints_fixed_properties = get_location_hints_fixed_properties(location_questions_dict)
   location_hints = {}
-  location_hints['categories'] = location_hints_unexpected_categories
+  # location_hints['categories'] = location_hints_unexpected_categories
   location_hints['properties'] = location_hints_fixed_properties
   generated_hint_sentences['locations'] = location_hints
   return generated_hint_sentences
