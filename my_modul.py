@@ -17,6 +17,94 @@ person_df = df_list["person"]
 year_df = df_list["year"]
 location_df = df_list["location"]
 
+
+
+
+
+def save_as_xlsx_file(year_questions_dict, person_questions_dict, location_questions_dict, generated_hint_sentences):
+    
+  year_dict_list =[]
+  for answer,question in year_questions_dict.items():
+    year_dict = {}
+    year_dict['question'] = question
+    year_dict['answer'] = answer
+    year_dict['category'] = 'Year'
+    hint_list=[]
+    for typ,value in generated_hint_sentences['years'][answer].items():
+      if typ != 'question':
+        for sports, hints in value.items():
+          for a,b in hints.items():
+            hint_list.append(a)
+    year_dict['hints'] = hint_list
+    year_dict_list.append(year_dict)
+  # pprint.pprint(year_dict_list)
+  person_dict_list =[]
+  for answer, question in person_questions_dict.items():
+    person_dict = {}
+    person_dict['question'] = question
+    person_dict['answer'] = answer
+    person_dict['category'] = 'people'
+    hint_list=[]
+    for cat, value in generated_hint_sentences['people'].items():
+      if cat == 'categories':
+        for pers,hin in value.items():
+          for a,b in hin.items():
+            hint_list.append(a)
+      elif cat == 'predicates':
+        for pers,hin in value.items():
+          for a,b in hin.items():
+            if a != 'question':
+              for c,d in b.items():
+                hint_list.append(c)
+    person_dict['hints'] = hint_list
+    person_dict_list.append(person_dict)
+  # pprint.pprint(person_dict_list)
+  location_dict_list =[]
+  for answer, question in location_questions_dict.items():
+    location_dict = {}
+    location_dict['question'] = question
+    location_dict['answer'] = answer
+    location_dict['category'] = 'location'
+    hint_list=[]
+    for cat, value in generated_hint_sentences['locations'].items():
+      if cat == 'properties':
+        for pers,hin in value.items():
+          for a,b in hin.items():
+            if a != 'question':
+              for c,d in b.items():
+                hint_list.append(c)
+    location_dict['hints'] = hint_list
+    location_dict_list.append(location_dict)
+  # pprint.pprint(location_dict_list)
+  gen_hints = {}
+  gen_hints['years'] = year_dict_list
+  gen_hints['people'] = person_dict_list
+  gen_hints['locations'] = location_dict_list
+
+
+  dict_list=[]
+  for a in year_dict_list:
+    dict_list.append(a)
+  for a in person_dict_list:
+    dict_list.append(a)
+  for a in location_dict_list:
+    dict_list.append(a)
+
+  # Convert the list of dictionaries to a pandas DataFrame
+  df = pd.DataFrame(dict_list)
+
+  # Define the order of columns (if you want a specific order)
+  columns_order = ["question", "answer", "category", "hints"]
+  df = df[columns_order]
+
+  # Save the DataFrame to an Excel file
+  output_file = "content/automaticHintGeneration/tmp/results.xlsx"
+  df.to_excel(output_file, index=False)
+
+
+  return dict_list
+
+
 """# **Generate hints - (putting everything together)**"""
 #Function that puts everything together
 # Call hint-generation-functions for years, people and locations
@@ -38,11 +126,14 @@ def generate_hints_from_xlsx(file_path):
   combined_hint_sentences = {}
   #generates the hints for the YEARS question
   years_hints = generate_hints_years(year_questions_dict)
+
   generated_hint_sentences['years'] = years_hints
   #generates the hints for the PEOPLE question
   people_hints_unexpected_categories = get_person_hints_unexpected_categories(person_questions_dict)
   people_hints_unexpected_predicates = get_person_hints_unexpected_predicates(person_questions_dict)
   people_hints = {}
+  # people_hints['categories'] = people_hints_unexpected_categories
+
   people_hints['categories'] = people_hints_unexpected_categories
   people_hints['predicates'] = people_hints_unexpected_predicates
   generated_hint_sentences['people'] = people_hints
@@ -53,7 +144,67 @@ def generate_hints_from_xlsx(file_path):
   # location_hints['categories'] = location_hints_unexpected_categories
   location_hints['properties'] = location_hints_fixed_properties
   generated_hint_sentences['locations'] = location_hints
+
+  #safe results as xlsx to download
+  #choose one with the highest, the lowest and a median score
+  # dict_list = 
+
   return generated_hint_sentences
+
+def save_as_xlsx_file(year_questions_dict, person_questions_dict, location_questions_dict, generated_hint_sentences):
+  
+  person_dict = {}
+  location_dict = {}
+  
+  
+  year_dict_list =[]
+  for answer,question in year_questions_dict.items():
+    year_dict = {}
+    year_dict['question'] = question
+    year_dict['answer'] = answer
+    year_dict['category'] = 'Year'
+    hint_list=[]
+    for type,value in generated_hint_sentences['years'][answer].items():
+      for sports, hints in value.items():
+        hint_list.append(hints[0])
+    year_dict['hints'] = hint_list
+
+    year_dict_list.append(year_dict)
+
+  pprint.pprint(year_dict_list)
+  # dict1 = {
+  #     "question": "What is the capital of France?",
+  #     "answer": "Paris",
+  #     "category": "Geography",
+  #     "hints": ["Famous for the Eiffel Tower.", "Known for its cuisine."]
+  # }
+
+  # dict2 = {
+  #     "question": "Who wrote 'Romeo and Juliet'?",
+  #     "answer": "William Shakespeare",
+  #     "category": "Literature",
+  #     "hints": ["Considered one of the greatest playwrights.", "Born in Stratford-upon-Avon."]
+  # }
+
+  # # Create a list of dictionaries
+  # dict_list = [dict1, dict2]  # Add more dictionaries as needed
+
+  # # Convert the list of dictionaries to a pandas DataFrame
+  # df = pd.DataFrame(dict_list)
+
+  # # Explode the 'hints' column to create separate rows for each hint
+  # df_exploded = df.explode('hints').reset_index(drop=True)
+
+  # # Define the order of columns (if you want a specific order)
+  # columns_order = ["question", "answer", "category", "hints"]
+  # df_exploded = df_exploded[columns_order]
+
+  # # Save the DataFrame to an Excel file
+  # output_file = "results_with_hints.xlsx"
+  # df_exploded.to_excel(output_file, index=False)
+
+  # print("Data has been written to", output_file)
+
 
 
 def save_file():

@@ -914,6 +914,7 @@ def get_location_hints_fixed_properties(location_answers_dict):
             sim_score = get_similarity_score(question,sentence)
             inter[code]  = {sentence : sim_score}
         ret[key] = inter
+        ret[key]['question'] = question    
   return ret
 
 #people
@@ -2401,6 +2402,7 @@ def get_person_hints_unexpected_categories(person_answers_dict):
       if key == answer:
         sim_score = get_similarity_score(question,value[0])
         inter[key]  = {value[0] : sim_score}
+        # inter[key]['question'] = question
   return inter
 
 """### Functions for the unexpected-predicate approach:"""
@@ -2429,8 +2431,10 @@ Returns: dict: A dictionary containing hint sentences for each person's properti
 """
 def create_hint_sentences_predicates(properties_person_name_dict, properties_blank_sentences, person_answers_dict):
   person_names = []
+  ques = {}
   for answer, question in person_answers_dict.items():
     person_names.append(answer)
+    ques[answer] = question
   hint_sentence_dict = {}
   for pers_name, value in properties_person_name_dict.items():
     properties_sentences_dict = {}
@@ -2465,6 +2469,9 @@ def create_hint_sentences_predicates(properties_person_name_dict, properties_bla
     
     # properties_sentences_dict = remove_sentences_with_asterisk(properties_sentences_dict)
     hint_sentence_dict[pers_name] = inter
+    for a,b in ques.items():
+      if a == pers_name:
+        hint_sentence_dict[a]['question'] = b
   return hint_sentence_dict
 
 def get_person_hints_unexpected_predicates(person_answers_dict):
@@ -2476,6 +2483,7 @@ def get_person_hints_unexpected_predicates(person_answers_dict):
         if key == answer:
           sim_score = get_similarity_score(question,sentence)
           hint_sentences_predicates[key][predicate] = {sentence : sim_score}
+          hint_sentences_predicates[key]['question'] = question
   return hint_sentences_predicates
 
 #years
