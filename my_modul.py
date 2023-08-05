@@ -22,7 +22,6 @@ location_df = df_list["location"]
 
 
 def save_as_xlsx_file(year_questions_dict, person_questions_dict, location_questions_dict, generated_hint_sentences):
-    
   year_dict_list =[]
   for answer,question in year_questions_dict.items():
     year_dict = {}
@@ -81,7 +80,6 @@ def save_as_xlsx_file(year_questions_dict, person_questions_dict, location_quest
   gen_hints['people'] = person_dict_list
   gen_hints['locations'] = location_dict_list
 
-
   dict_list=[]
   for a in year_dict_list:
     dict_list.append(a)
@@ -89,18 +87,14 @@ def save_as_xlsx_file(year_questions_dict, person_questions_dict, location_quest
     dict_list.append(a)
   for a in location_dict_list:
     dict_list.append(a)
-
   # Convert the list of dictionaries to a pandas DataFrame
   df = pd.DataFrame(dict_list)
-
   # Define the order of columns (if you want a specific order)
   columns_order = ["question", "answer", "category", "hints"]
   df = df[columns_order]
-
   # Save the DataFrame to an Excel file
   output_file = "content/automaticHintGeneration/tmp/results.xlsx"
   df.to_excel(output_file, index=False)
-
 
   return dict_list
 
@@ -148,63 +142,9 @@ def generate_hints_from_xlsx(file_path):
   #safe results as xlsx to download
   #choose one with the highest, the lowest and a median score
   # dict_list = 
+  save_as_xlsx_file(year_questions_dict, person_questions_dict, location_questions_dict, generated_hint_sentences)
 
   return generated_hint_sentences
-
-def save_as_xlsx_file(year_questions_dict, person_questions_dict, location_questions_dict, generated_hint_sentences):
-  
-  person_dict = {}
-  location_dict = {}
-  
-  
-  year_dict_list =[]
-  for answer,question in year_questions_dict.items():
-    year_dict = {}
-    year_dict['question'] = question
-    year_dict['answer'] = answer
-    year_dict['category'] = 'Year'
-    hint_list=[]
-    for type,value in generated_hint_sentences['years'][answer].items():
-      for sports, hints in value.items():
-        hint_list.append(hints[0])
-    year_dict['hints'] = hint_list
-
-    year_dict_list.append(year_dict)
-
-  pprint.pprint(year_dict_list)
-  # dict1 = {
-  #     "question": "What is the capital of France?",
-  #     "answer": "Paris",
-  #     "category": "Geography",
-  #     "hints": ["Famous for the Eiffel Tower.", "Known for its cuisine."]
-  # }
-
-  # dict2 = {
-  #     "question": "Who wrote 'Romeo and Juliet'?",
-  #     "answer": "William Shakespeare",
-  #     "category": "Literature",
-  #     "hints": ["Considered one of the greatest playwrights.", "Born in Stratford-upon-Avon."]
-  # }
-
-  # # Create a list of dictionaries
-  # dict_list = [dict1, dict2]  # Add more dictionaries as needed
-
-  # # Convert the list of dictionaries to a pandas DataFrame
-  # df = pd.DataFrame(dict_list)
-
-  # # Explode the 'hints' column to create separate rows for each hint
-  # df_exploded = df.explode('hints').reset_index(drop=True)
-
-  # # Define the order of columns (if you want a specific order)
-  # columns_order = ["question", "answer", "category", "hints"]
-  # df_exploded = df_exploded[columns_order]
-
-  # # Save the DataFrame to an Excel file
-  # output_file = "results_with_hints.xlsx"
-  # df_exploded.to_excel(output_file, index=False)
-
-  # print("Data has been written to", output_file)
-
 
 
 def save_file():
