@@ -17,10 +17,6 @@ person_df = df_list["person"]
 year_df = df_list["year"]
 location_df = df_list["location"]
 
-
-
-
-
 def save_as_xlsx_file(year_questions_dict, person_questions_dict, location_questions_dict, generated_hint_sentences):
   year_dict_list =[]
   for answer,question in year_questions_dict.items():
@@ -93,7 +89,7 @@ def save_as_xlsx_file(year_questions_dict, person_questions_dict, location_quest
   columns_order = ["question", "answer", "category", "hints"]
   df = df[columns_order]
   # Save the DataFrame to an Excel file
-  output_file = "content/automaticHintGeneration/tmp/results.xlsx"
+  output_file = "/content/automaticHintGeneration/tmp/results.xlsx"
   df.to_excel(output_file, index=False)
 
   return dict_list
