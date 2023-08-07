@@ -2059,7 +2059,7 @@ def get_categories_of_people_list(people_list, limit=5):
     innerDic = OrderedDict()
     for c,d in b.items():
       innerDic[c] = int(d.replace(',', ''))
-  newdic[a] = dict(sorted(innerDic.items(), key = lambda x: x[1], reverse=True))
+    newdic[a] = dict(sorted(innerDic.items(), key = lambda x: x[1], reverse=True))
 
   for key,value in newdic.items():
     related_people_orderd = dict(sorted(value.items(), key=lambda x: x[1], reverse=True))   #order the dict after the pageviews in descending order
