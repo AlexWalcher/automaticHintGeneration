@@ -32,7 +32,30 @@ elif selected == "Upload file":
             file_path = "/content/automaticHintGeneration/tmp/testSet_WebApp.xlsx"
             gen_hints = generate_hints_from_xlsx(file_path)
         st.write('Generated hints:')
-        st.write(gen_hints)
+        for key, value in gen_hints.items():
+            if key == "years":
+                for year, hint_type in value.items():
+                    for k, v in hint_type.items():
+                        st.write(v)
+            else:
+                for pel, hint_type in value.items():
+                    for per, val in hint_type.items():
+                        if isinstance(val, dict):
+                            for k, v in val.items():
+                                st.write(v)
+                            else:
+                                st.write(val)
+        save_folder = '/content/automaticHintGeneration/tmp/'
+        file_name = 'results.xlsx'
+        download_path = Path(save_folder, file_name)
+        if download_path.exists():
+            st.download_button(
+                label="Download data as excel",
+                data=xlsx,
+                file_name='/content/automaticHintGeneration/tmp/results.xlsx',
+                mime='text/xlsx',
+            )
+        # st.write(gen_hints)
 
 elif selected == "Year question":
     st.header('Enter the years-question with the answer and wait for the corresponding hint to be generated.')

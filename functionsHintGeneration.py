@@ -34,6 +34,8 @@ from importsHintGeneration import *
 #   def set_year_questions_dict(self, value):
 #     self.gl_year_questions_dict = value
 
+sim_score_priority_words = ['World Cup', 'Champions League', 'occupied', 'Spoken language', 'shares border']
+
 
 def load_file_path(file_path):
   #file_path = "/content/automaticHintGeneration/testSet.xlsx"
@@ -122,18 +124,18 @@ def preprocess_text(text):
   token_tensor = torch.tensor(tokens).unsqueeze(0)
   return token_tensor
 
-#Calculates a similarity score by comparing the two pieces of text va BERNT
-def get_similarity_score(text1, text2):
-  # Preprocess both texts
-  tensor1 = preprocess_text(text1)
-  tensor2 = preprocess_text(text2)
-  # Pass both tensors to the model to get the embeddings
-  with torch.no_grad():
-    output1 = model(tensor1)
-    output2 = model(tensor2)
-  # Compute the cosine similarity between the two embeddings
-  cosine_sim = torch.nn.functional.cosine_similarity(output1.last_hidden_state.mean(dim=1), output2.last_hidden_state.mean(dim=1), dim=1)
-  return cosine_sim.item()
+# #Calculates a similarity score by comparing the two pieces of text va BERNT
+# def get_similarity_score(text1, text2):
+#   # Preprocess both texts
+#   tensor1 = preprocess_text(text1)
+#   tensor2 = preprocess_text(text2)
+#   # Pass both tensors to the model to get the embeddings
+#   with torch.no_grad():
+#     output1 = model(tensor1)
+#     output2 = model(tensor2)
+#   # Compute the cosine similarity between the two embeddings
+#   cosine_sim = torch.nn.functional.cosine_similarity(output1.last_hidden_state.mean(dim=1), output2.last_hidden_state.mean(dim=1), dim=1)
+#   return cosine_sim.item()
 
 # Dictionary for thumbcaption part of a year
 """
@@ -728,7 +730,8 @@ def get_location_hints_unexpected_categories(location_answers_dict):
   for key, value in mucd.items():
     for answer,question in location_answers_dict.items():
       if key == answer:
-        sim_score = get_similarity_score(question,value[0])
+        # sim_score = get_similarity_score(question,value[0])
+        sim_score = calculate_similarity(question,answer,value[0],sim_score_priority_words)
         inter[key]  = {value[0] : sim_score}
   return inter
 
@@ -911,7 +914,8 @@ def get_location_hints_fixed_properties(location_answers_dict):
           if '*' in sentence:
             continue
           else:
-            sim_score = get_similarity_score(question,sentence)
+            # sim_score = get_similarity_score(question,sentence)
+            sim_score = calculate_similarity(question,answer,sentence,sim_score_priority_words)
             inter[code]  = {sentence : sim_score}
         ret[key] = inter
         ret[key]['question'] = question    
@@ -2400,7 +2404,8 @@ def get_person_hints_unexpected_categories(person_answers_dict):
   for key, value in mucd.items():
     for answer,question in person_answers_dict.items():
       if key == answer:
-        sim_score = get_similarity_score(question,value[0])
+        # sim_score = get_similarity_score(question,value[0])
+        sim_score = calculate_similarity(question,answer,value[0],sim_score_priority_words)
         inter[key]  = {value[0] : sim_score}
         # inter[key]['question'] = question
   return inter
@@ -2481,7 +2486,8 @@ def get_person_hints_unexpected_predicates(person_answers_dict):
     for predicate, sentence in value.items():
       for answer,question in person_answers_dict.items():
         if key == answer:
-          sim_score = get_similarity_score(question,sentence)
+          # sim_score = get_similarity_score(question,sentence)
+          sim_score = calculate_similarity(question,answer,sentence,sim_score_priority_words)
           hint_sentences_predicates[key][predicate] = {sentence : sim_score}
           hint_sentences_predicates[key]['question'] = question
   return hint_sentences_predicates
@@ -3226,6 +3232,33 @@ def get_similarity_score(text1, text2):
   cosine_sim = torch.nn.functional.cosine_similarity(output1.last_hidden_state.mean(dim=1), output2.last_hidden_state.mean(dim=1), dim=1)
   return cosine_sim.item()
 
+# calculate_similarity(question,answer,hint,sim_score_priority_words)
+
+
+# import spacy
+from sklearn.metrics.pairwise import cosine_similarity
+
+# Load the spaCy language model with word embeddings
+nlp = spacy.load("en_core_web_md")
+
+def calculate_similarity(question, answer, hint, priority_words=None, priority_weight=1.5):
+  if priority_words is None:
+    priority_words = []
+  # Calculate the word embeddings for the question and answer
+  question_embedding = np.mean([nlp(word).vector for word in question.split()], axis=0)
+  answer_embedding = nlp(answer).vector
+  # Calculate the similarity scores for each hint
+  similarity_scores = []
+  hint_embedding = np.mean([nlp(word).vector for word in hint.split()], axis=0)
+  similarity_score = cosine_similarity([question_embedding, answer_embedding], [hint_embedding, answer_embedding])
+  # Apply a bonus weight if any priority words are present in the hint
+  bonus_weight = priority_weight if any(word in hint for word in priority_words) else 1.0
+  similarity_score[0, 0] *= bonus_weight
+  
+  return similarity_score[0, 0]
+
+
+
 """### Dictionary for historical events from vizgr.org"""
 """
 Downloads an XML file from the specified URL and saves it to the specified filename.
@@ -3420,7 +3453,8 @@ def generate_hints_years(qa_dict):
           if category == 'sports':
             for key, value in subdata.items():
               sim_scores[year][category][key] = {}
-              similarity_score = get_similarity_score(q,value)
+              # similarity_score = get_similarity_score(q,value)
+              similarity_score = calculate_similarity(q,year,value,sim_score_priority_words)
               sim_scores[year][category][key][value] = similarity_score
           # elif category == 'thumbcaption':
           #   for i in subdata:
@@ -3430,7 +3464,8 @@ def generate_hints_years(qa_dict):
           elif category == 'vizgr':
             for key, value in subdata.items():
               sim_scores[year][category][key] = {}
-              similarity_score = get_similarity_score(q,value)
+              # similarity_score = get_similarity_score(q,value)
+              similarity_score = calculate_similarity(q,year,value,sim_score_priority_words)
               sim_scores[year][category][key][value] = similarity_score
       else:
         continue
