@@ -3234,9 +3234,20 @@ def get_similarity_score(text1, text2):
 
 # calculate_similarity(question,answer,hint,sim_score_priority_words)
 
+import spacy
+import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
+
+import spacy.cli
+
+# Download the larger English model (en_core_web_md)
+spacy.cli.download("en_core_web_md")
+
+# Alternatively, download the smaller English model (en_core_web_sm)
+spacy.cli.download("en_core_web_sm")
 
 # import spacy
-from sklearn.metrics.pairwise import cosine_similarity
+# from sklearn.metrics.pairwise import cosine_similarity
 
 # Load the spaCy language model with word embeddings
 nlp = spacy.load("en_core_web_md")
@@ -3254,7 +3265,7 @@ def calculate_similarity(question, answer, hint, priority_words=None, priority_w
   # Apply a bonus weight if any priority words are present in the hint
   bonus_weight = priority_weight if any(word in hint for word in priority_words) else 1.0
   similarity_score[0, 0] *= bonus_weight
-  
+
   return similarity_score[0, 0]
 
 

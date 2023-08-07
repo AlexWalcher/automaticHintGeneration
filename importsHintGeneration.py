@@ -61,6 +61,15 @@ from sklearn.metrics.pairwise import cosine_similarity
 from selenium import webdriver
 from selenium.webdriver import Firefox
 
+# python -m spacy download en
+import spacy
+import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
+import spacy.cli
+# Download the larger English model (en_core_web_md)
+spacy.cli.download("en_core_web_md")
+# Alternatively, download the smaller English model (en_core_web_sm)
+spacy.cli.download("en_core_web_sm")
 
 
 from bs4 import BeautifulSoup
