@@ -3467,10 +3467,11 @@ def generate_hints_years(qa_dict):
         for category, subdata in data.items():
           if category == 'sports':
             for key, value in subdata.items():
-              sim_scores[year][category][key] = {}
-              # similarity_score = get_similarity_score(q,value)
-              similarity_score = calculate_similarity(q,y,value,sim_score_priority_words)
-              sim_scores[year][category][key][value] = similarity_score
+              if value:
+                sim_scores[year][category][key] = {}
+                # similarity_score = get_similarity_score(q,value)
+                similarity_score = calculate_similarity(q,y,value,sim_score_priority_words)
+                sim_scores[year][category][key][value] = similarity_score
           # elif category == 'thumbcaption':
           #   for i in subdata:
           #     sim_scores[year][category] = {}
@@ -3478,10 +3479,11 @@ def generate_hints_years(qa_dict):
           #     sim_scores[year][category][i] = similarity_score
           elif category == 'vizgr':
             for key, value in subdata.items():
-              sim_scores[year][category][key] = {}
-              # similarity_score = get_similarity_score(q,value)
-              similarity_score = calculate_similarity(q,y,value,sim_score_priority_words)
-              sim_scores[year][category][key][value] = similarity_score
+              if value:
+                sim_scores[year][category][key] = {}
+                # similarity_score = get_similarity_score(q,value)
+                similarity_score = calculate_similarity(q,y,value,sim_score_priority_words)
+                sim_scores[year][category][key][value] = similarity_score
       else:
         continue
   for y, q in qa_dict.items():
