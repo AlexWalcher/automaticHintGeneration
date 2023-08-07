@@ -3256,12 +3256,12 @@ def calculate_similarity(question, answer, hint, priority_words=None, priority_w
   if priority_words is None:
     priority_words = []
 
-  if isinstance(answer, int):
-        # Convert the integer to a string
-        answer = str(answer)
+  # if isinstance(answer, int):
+  #   # Convert the integer to a string
+  #   answer = str(answer)
   # Calculate the word embeddings for the question and answer
   question_embedding = np.mean([nlp(word).vector for word in question.split()], axis=0)
-  answer_embedding = nlp(answer).vector
+  answer_embedding = nlp(str(answer)).vector
   # Calculate the similarity scores for each hint
   similarity_scores = []
   hint_embedding = np.mean([nlp(word).vector for word in hint.split()], axis=0)
@@ -3469,7 +3469,7 @@ def generate_hints_years(qa_dict):
             for key, value in subdata.items():
               sim_scores[year][category][key] = {}
               # similarity_score = get_similarity_score(q,value)
-              similarity_score = calculate_similarity(q,year,value,sim_score_priority_words)
+              similarity_score = calculate_similarity(q,y,value,sim_score_priority_words)
               sim_scores[year][category][key][value] = similarity_score
           # elif category == 'thumbcaption':
           #   for i in subdata:
@@ -3480,7 +3480,7 @@ def generate_hints_years(qa_dict):
             for key, value in subdata.items():
               sim_scores[year][category][key] = {}
               # similarity_score = get_similarity_score(q,value)
-              similarity_score = calculate_similarity(q,year,value,sim_score_priority_words)
+              similarity_score = calculate_similarity(q,y,value,sim_score_priority_words)
               sim_scores[year][category][key][value] = similarity_score
       else:
         continue
