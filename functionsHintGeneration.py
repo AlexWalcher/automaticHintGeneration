@@ -3234,17 +3234,17 @@ def get_similarity_score(text1, text2):
 
 # calculate_similarity(question,answer,hint,sim_score_priority_words)
 
-import spacy
-import numpy as np
-from sklearn.metrics.pairwise import cosine_similarity
+# import spacy
+# import numpy as np
+# from sklearn.metrics.pairwise import cosine_similarity
 
-import spacy.cli
+# import spacy.cli
 
-# Download the larger English model (en_core_web_md)
-spacy.cli.download("en_core_web_md")
+# # Download the larger English model (en_core_web_md)
+# spacy.cli.download("en_core_web_md")
 
-# Alternatively, download the smaller English model (en_core_web_sm)
-spacy.cli.download("en_core_web_sm")
+# # Alternatively, download the smaller English model (en_core_web_sm)
+# spacy.cli.download("en_core_web_sm")
 
 # import spacy
 # from sklearn.metrics.pairwise import cosine_similarity
@@ -3255,6 +3255,10 @@ nlp = spacy.load("en_core_web_md")
 def calculate_similarity(question, answer, hint, priority_words=None, priority_weight=1.5):
   if priority_words is None:
     priority_words = []
+
+  if isinstance(answer, int):
+        # Convert the integer to a string
+        answer = str(answer)
   # Calculate the word embeddings for the question and answer
   question_embedding = np.mean([nlp(word).vector for word in question.split()], axis=0)
   answer_embedding = nlp(answer).vector
