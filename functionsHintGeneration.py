@@ -249,6 +249,37 @@ def list_to_dict(lst):
       result[key] = value
   return result
 
+
+def get_all_related_links(wiki_link):
+  # Extract the page title from the Wikipedia link
+  title = wiki_link.split('/')[-1]
+  
+  base_api_url = 'https://en.wikipedia.org/w/api.php'
+  params = {
+    'action': 'query',
+    'titles': title,
+    'prop': 'links',
+    'pllimit': 'max',
+    'format': 'json'
+  }
+    
+  all_related_links = []
+  while True:
+    response = requests.get(base_api_url, params=params)
+    data = response.json()
+    if 'query' in data and 'pages' in data['query']:
+      page = next(iter(data['query']['pages'].values()))
+      if 'links' in page:
+        links = page['links']
+        all_related_links.extend(links)
+    if 'continue' in data:
+      params['plcontinue'] = data['continue']['plcontinue']
+    else:
+      break
+          
+  return [{'url': f'https://en.wikipedia.org/wiki/{link["title"]}', 'title': link['title']} for link in all_related_links]
+
+
 # #from people
 #retrieves all of the relate links of a wiki page
 def get_related_links(wiki_link):
@@ -435,7 +466,11 @@ def calculate_IoU_from_countedCategoryDict(counted_category_apperances):
     for person, number in value.items():
       num_total_categs = 20
       IoU_list.append((person,number,num_total_categs, number/num_total_categs))
-    IoU_dict[key] = IoU_list
+    if IoU_list:
+      IoU_dict[key] = IoU_list
+    else:
+      IoU_dict[key] = [('Placeholder', 0, 20, 1)]
+
   return IoU_dict
 
 """
@@ -478,7 +513,9 @@ def calculate_categories_score(counted_category_apperances, avg_diversity_from_I
           try:
             inter_dict[link] = float(cat_popularity[1]) * float(cat_div)
           except Exception as e:
-            print(e)
+            inter_dict[link] = 0
+            print("error", e)
+
     categories_scores_dict[key] = inter_dict
   ordered_dicter = {}
   ordered_scores ={}
@@ -905,9 +942,10 @@ def get_location_hints_fixed_properties(location_answers_dict):
     }
   location_infos_wikidata = {}
   sol = create_hint_sentences(location_answers_dict, locations_identifiers_dict, properties_blank_sentences_locations)
-  inter = {}
+  # inter = {}
   ret={}
   for key, value in sol.items():
+    inter = {}
     for answer,question in location_answers_dict.items():
       if key == answer:
         for code, sentence in value.items():
@@ -917,8 +955,8 @@ def get_location_hints_fixed_properties(location_answers_dict):
             # sim_score = get_similarity_score(question,sentence)
             sim_score = calculate_similarity(question,answer,sentence,sim_score_priority_words)
             inter[code]  = {sentence : sim_score}
-        ret[key] = inter
-        ret[key]['question'] = question    
+    ret[key] = inter
+    ret[key]['question'] = question    
   return ret
 
 #people
@@ -1342,9 +1380,10 @@ def prune_and_ordered_dict(dictionary, n):
   inter1_dict= OrderedDict()
   # bad_categories_list = ['Living_people', 'Living people', '_births', 'births', '_deaths', 'deaths', 'Good_articles', 'Good articles', 'Members','19th', '20th', '21st', 'Capitals in Europe', 'state capitals']
   bad_categories_list = ['Living_people', 'Living people', '_births', 'births', '_deaths', 'deaths', 'Good_articles', 'Good articles', 'Members','19th', 'Capitals in Europe', 'state capitals']
-
+  print(dictionary)
   people_occupations = get_occupations(dictionary)
   print("occu", people_occupations)
+  
   for key, value in dictionary.items():
     inter3_dict= OrderedDict()
     for link, tuplee in value.items():
@@ -1365,7 +1404,7 @@ def prune_and_ordered_dict(dictionary, n):
               contains_bad_word = True
               continue
       except Exception as e:
-        print(e)
+        print("prune_and_ordered_dict", e)
       if contains_bad_word == False:
         inter3_dict[link] = tuplee
     pruned_dict[key] = inter3_dict
@@ -1708,6 +1747,17 @@ def extract_list_elements(html_string):
 
 #searches the occupation for every entry in people list
 def get_occupations(people_list):
+  print(people_list)
+  peop_dict = {}
+
+  if isinstance(people_list, list):
+    for item in people_list:
+      print("Processing item in list:", item)
+      peop_dict[item] = " "
+  elif isinstance(people_list, str):
+    print("Processing string:", people_list)
+    peop_dict[people_list] = " "
+
   occupation_person_dict = {}
   identifiers = get_wikipedia_identifiers(people_list)
   properties_list = ['occupation']
@@ -1716,26 +1766,26 @@ def get_occupations(people_list):
     occupation_person_dict[name] = inter['occupation'][0]
   return occupation_person_dict
 
-#retrieves all of the relate links of a wiki page
-def get_related_links(wiki_link):
-  # Extract the page title from the Wikipedia link
-  title = wiki_link.split('/')[-1]
-  # Format the API URL to get the page content
-  api_url = f'https://en.wikipedia.org/w/api.php?action=query&titles={title}&prop=links&pllimit=max&format=json'
-  # Send a GET request to the API
-  response = requests.get(api_url)
-  if response.status_code == 200:
-    data = response.json()
-    # Extract the page ID from the API response
-    page_id = next(iter(data['query']['pages']))
-    # Check if the page exists and has links
-    if page_id != '-1' and 'links' in data['query']['pages'][page_id]:
-      # Retrieve the links from the API response
-      links = data['query']['pages'][page_id]['links']
-      # Extract the link titles and URLs
-      related_links = [{'url': f'https://en.wikipedia.org/wiki/{link["title"]}', 'title': link['title']} for link in links]
-      return related_links
-  return []
+# #retrieves all of the relate links of a wiki page
+# def get_related_links(wiki_link):
+#   # Extract the page title from the Wikipedia link
+#   title = wiki_link.split('/')[-1]
+#   # Format the API URL to get the page content
+#   api_url = f'https://en.wikipedia.org/w/api.php?action=query&titles={title}&prop=links&pllimit=max&format=json'
+#   # Send a GET request to the API
+#   response = requests.get(api_url)
+#   if response.status_code == 200:
+#     data = response.json()
+#     # Extract the page ID from the API response
+#     page_id = next(iter(data['query']['pages']))
+#     # Check if the page exists and has links
+#     if page_id != '-1' and 'links' in data['query']['pages'][page_id]:
+#       # Retrieve the links from the API response
+#       links = data['query']['pages'][page_id]['links']
+#       # Extract the link titles and URLs
+#       related_links = [{'url': f'https://en.wikipedia.org/wiki/{link["title"]}', 'title': link['title']} for link in links]
+#       return related_links
+#   return []
 
 # function to check if the title consists of two words -> discrad a lot of entries for performance reasons
 def filter_two_word_titles(links):
@@ -2006,10 +2056,13 @@ def get_related_people_from_person_name(person_name):
   modified_text = person_name.replace(' ', '_') #replace spaces with underscores in the name to use it in link
   link = f"{wiki_link}/{modified_text}"
   related_articles = get_related_links(link)
+  # related_articles = get_all_related_links(link)
   filtered_links = filter_two_word_titles(related_articles)
+  if len(filtered_links) < 5:
+    related_articles = get_all_related_links(link)
+    filtered_links = filter_two_word_titles(related_articles)
   related_people_list = check_if_person(filtered_links)
   return related_people_list
-
 """
 Function that gets the pageviews of up to 10 links at a time;
 Args:     dictionary where the keys are the answer-entities and the value is a link_list
@@ -2134,6 +2187,22 @@ def get_categories_with_pv_answerEntities(person_questions_dict):
     for key in b.items():
       inter_list.append((key[0], int(key[1].replace(",", ""))))
     intermediate_ordere[a] = OrderedDict(sorted(inter_list, key=lambda x: x[1], reverse=True))
+
+  bad_categories_list = ['Living_people', 'Living people', '_births', 'births', '_deaths', 'deaths', 'Good_articles', 'Good articles', 'Members','19th', 'Capitals in Europe', 'state capitals']
+
+
+  for k,v in intermediate_ordere.items():
+    inter_list = []
+    for a,b in v.items():
+      contains_word = False 
+      for bad_word in bad_categories_list:
+        if bad_word in a:
+          contains_word = True
+      if contains_word == True: 
+        print(a,b)
+      if contains_word == False: 
+        inter_list.append((a,b))
+    intermediate_ordere[k] = OrderedDict(sorted(inter_list, key=lambda x: x[1], reverse=True))
 
   return intermediate_ordere
 
@@ -2278,7 +2347,10 @@ def calculate_IoU_from_countedCategoryDict(counted_category_apperances):
     for person, number in value.items():
       num_total_categs = 20
       IoU_list.append((person,number,num_total_categs, number/num_total_categs))
-    IoU_dict[key] = IoU_list
+    if IoU_list:
+      IoU_dict[key] = IoU_list
+    else:
+      IoU_dict[key] = [('Placeholder', 0, 20, 1)]
   return IoU_dict
 
 """
@@ -2354,7 +2426,7 @@ def create_hint_sentences_unexCategs(categories_scores_dict, person_answers_dict
         pass
       for sentence in template_sentence_person_list:
         hint_sentence_unexCateg_dict[key].append( sentence.replace('0', occu_str).replace('1', get_category_title(most_unexpected_categories_dict[key][0][0]).split(':')[-1].replace('_', ' ') ))
-  except Exception as e: print(e)
+  except Exception as e: print("create_hint_sentences_unexCategs", e)
   return hint_sentence_unexCateg_dict
 
 def get_person_hints_unexpected_categories(person_answers_dict):
