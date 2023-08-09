@@ -821,71 +821,80 @@ def get_entity_name(entity_id):
     return None
 
 def create_hint_sentences(location_answers_dict, locations_identifiers_dict, properties_blank_sentences_locations):
+  
+  
   ret ={}
   location_infos_wikidata = {}
   for key,value in location_answers_dict.items():
     location_infos_wikidata[key] = retrieve_location_data(key)
-    for propert, sentence in properties_blank_sentences_locations.items():
-      locations_identifiers_dict[propert] =  get_property_data(location_infos_wikidata[key], propert)
+    prop_sent = copy.copy(properties_blank_sentences_locations)
+    loc_ident = copy.copy(locations_identifiers_dict)
+    print(prop_sent )
+    print(properties_blank_sentences_locations)
+    print(loc_ident )
+    print(locations_identifiers_dict)
+
+    for propert, sentence in prop_sent.items():
+      loc_ident[propert] =  get_property_data(location_infos_wikidata[key], propert)
       #prune the list with multipole entries down to the desired one
-      if len(locations_identifiers_dict[propert]) > 1:
+      if len(loc_ident[propert]) > 1:
         if propert != 'P47' and propert != 'P37' and propert != 'P206' and propert != 'P421' and  propert != 'P463' and propert != 'P793' and propert != 'P38':
-          locations_identifiers_dict[propert] = locations_identifiers_dict[propert][-1]
+          loc_ident[propert] = loc_ident[propert][-1]
       #if entry not null, search for the id of the entry
-      if len(locations_identifiers_dict[propert]) > 0:
-        propety = locations_identifiers_dict[propert]
+      if len(loc_ident[propert]) > 0:
+        propety = loc_ident[propert]
         try:
           e_list = []
           for entry in propety:
             id = entry['id']
             e_list.append(get_entity_name(id))
-          locations_identifiers_dict[propert] = e_list
+          loc_ident[propert] = e_list
         except Exception as e:
           try:
               e_list = []
               for entry in propety:
                 id = entry[0]['id']
                 e_list.append(get_entity_name(id))
-              locations_identifiers_dict[propert] = e_list
+              loc_ident[propert] = e_list
           except Exception as e:
             try:
               e_list = []
               id = propety['id']
               e_list.append(get_entity_name(id))
-              locations_identifiers_dict[propert] = e_list
+              loc_ident[propert] = e_list
             except Exception as e:
               pass
       try:
         if propert == 'P1082':
-          locations_identifiers_dict[propert] = locations_identifiers_dict[propert]['amount']
+          loc_ident[propert] = loc_ident[propert]['amount']
       except Exception as e:
         print(e)
     #now lets choose wich one we use for the sentences (sometimes random for others specific ones)
-    for prop, sentence in properties_blank_sentences_locations.items():
-      for p, val in locations_identifiers_dict.items():
+    for prop, sentence in prop_sent.items():
+      for p, val in loc_ident.items():
         if p == prop:
           if len(val) == 0:
             continue
           elif len(val) == 1:
             word = str(val[0])
-            properties_blank_sentences_locations[p] = sentence.replace('*', word)
+            prop_sent[p] = sentence.replace('*', word)
           else:
             if p != 'P1082':
               try:
-                test =  locations_identifiers_dict[p]
+                test =  loc_ident[p]
                 random_Words = random.sample(test,3)
                 random_Words = ', '.join(random_Words)
               except:
                 try:
-                  test =  locations_identifiers_dict[p]
+                  test =  loc_ident[p]
                   random_Words = random.sample(test,2)
                   random_Words = ', '.join(random_Words)
                 except:
                   random_Words = random.choice(val)
-              properties_blank_sentences_locations[p] = sentence.replace('*', random_Words)
+              prop_sent[p] = sentence.replace('*', random_Words)
             else:
-              properties_blank_sentences_locations[p] = sentence.replace('*', locations_identifiers_dict[p] )
-    ret[key] = properties_blank_sentences_locations
+              prop_sent[p] = sentence.replace('*', loc_ident[p] )
+    ret[key] = prop_sent
   return ret
 
 def get_ranking_forfixed_properties(counted_category_apperances):

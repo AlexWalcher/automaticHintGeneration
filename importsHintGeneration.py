@@ -37,6 +37,7 @@ install('wikidata')
 
 #new imports
 import random
+import copy
 import spacy
 import time
 import requests
