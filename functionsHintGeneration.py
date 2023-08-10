@@ -34,6 +34,8 @@ from importsHintGeneration import *
 #   def set_year_questions_dict(self, value):
 #     self.gl_year_questions_dict = value
 
+sim_score_priority_words = ['World Cup', 'Champions League', 'occupied', 'Spoken language', 'shares border']
+
 
 def load_file_path(file_path):
   #file_path = "/content/automaticHintGeneration/testSet.xlsx"
@@ -122,18 +124,18 @@ def preprocess_text(text):
   token_tensor = torch.tensor(tokens).unsqueeze(0)
   return token_tensor
 
-#Calculates a similarity score by comparing the two pieces of text va BERNT
-def get_similarity_score(text1, text2):
-  # Preprocess both texts
-  tensor1 = preprocess_text(text1)
-  tensor2 = preprocess_text(text2)
-  # Pass both tensors to the model to get the embeddings
-  with torch.no_grad():
-    output1 = model(tensor1)
-    output2 = model(tensor2)
-  # Compute the cosine similarity between the two embeddings
-  cosine_sim = torch.nn.functional.cosine_similarity(output1.last_hidden_state.mean(dim=1), output2.last_hidden_state.mean(dim=1), dim=1)
-  return cosine_sim.item()
+# #Calculates a similarity score by comparing the two pieces of text va BERNT
+# def get_similarity_score(text1, text2):
+#   # Preprocess both texts
+#   tensor1 = preprocess_text(text1)
+#   tensor2 = preprocess_text(text2)
+#   # Pass both tensors to the model to get the embeddings
+#   with torch.no_grad():
+#     output1 = model(tensor1)
+#     output2 = model(tensor2)
+#   # Compute the cosine similarity between the two embeddings
+#   cosine_sim = torch.nn.functional.cosine_similarity(output1.last_hidden_state.mean(dim=1), output2.last_hidden_state.mean(dim=1), dim=1)
+#   return cosine_sim.item()
 
 # Dictionary for thumbcaption part of a year
 """
@@ -246,6 +248,37 @@ def list_to_dict(lst):
       value = int(sublist[3].replace(',', ''))
       result[key] = value
   return result
+
+
+def get_all_related_links(wiki_link):
+  # Extract the page title from the Wikipedia link
+  title = wiki_link.split('/')[-1]
+  
+  base_api_url = 'https://en.wikipedia.org/w/api.php'
+  params = {
+    'action': 'query',
+    'titles': title,
+    'prop': 'links',
+    'pllimit': 'max',
+    'format': 'json'
+  }
+    
+  all_related_links = []
+  while True:
+    response = requests.get(base_api_url, params=params)
+    data = response.json()
+    if 'query' in data and 'pages' in data['query']:
+      page = next(iter(data['query']['pages'].values()))
+      if 'links' in page:
+        links = page['links']
+        all_related_links.extend(links)
+    if 'continue' in data:
+      params['plcontinue'] = data['continue']['plcontinue']
+    else:
+      break
+          
+  return [{'url': f'https://en.wikipedia.org/wiki/{link["title"]}', 'title': link['title']} for link in all_related_links]
+
 
 # #from people
 #retrieves all of the relate links of a wiki page
@@ -433,7 +466,11 @@ def calculate_IoU_from_countedCategoryDict(counted_category_apperances):
     for person, number in value.items():
       num_total_categs = 20
       IoU_list.append((person,number,num_total_categs, number/num_total_categs))
-    IoU_dict[key] = IoU_list
+    if IoU_list:
+      IoU_dict[key] = IoU_list
+    else:
+      IoU_dict[key] = [('Placeholder', 0, 20, 1)]
+
   return IoU_dict
 
 """
@@ -476,7 +513,9 @@ def calculate_categories_score(counted_category_apperances, avg_diversity_from_I
           try:
             inter_dict[link] = float(cat_popularity[1]) * float(cat_div)
           except Exception as e:
-            print(e)
+            inter_dict[link] = 0
+            print("error", e)
+
     categories_scores_dict[key] = inter_dict
   ordered_dicter = {}
   ordered_scores ={}
@@ -704,7 +743,7 @@ def get_location_hints_unexpected_categories(location_answers_dict):
     related_location_pageviews_dict = get_pageviews_from_linkssssssss(related_location_link_dict)
   # pprint.pprint(related_location_pageviews_dict)
   #time saving for third part (related locations categories recovery and ordering) - 43m+ (14m-24m)
-  most_popular_related_location_with_categories = get_categories_of_people_list(related_location_pageviews_dict)
+  most_popular_related_location_with_categories = get_categories_of_people_list(related_location_pageviews_dict, location_answers_dict)
   #time saving for third part retrieves the categories of the answer-entities - 9m+ (6m)
   answer_entities_with_categories_location = get_categories_with_pv_answerEntities_location(location_answers_dict)
   #time saving for fourth part counts the categories of the answer-entities - 3s
@@ -728,7 +767,8 @@ def get_location_hints_unexpected_categories(location_answers_dict):
   for key, value in mucd.items():
     for answer,question in location_answers_dict.items():
       if key == answer:
-        sim_score = get_similarity_score(question,value[0])
+        # sim_score = get_similarity_score(question,value[0])
+        sim_score = calculate_similarity(question,answer,value[0],sim_score_priority_words)
         inter[key]  = {value[0] : sim_score}
   return inter
 
@@ -781,71 +821,80 @@ def get_entity_name(entity_id):
     return None
 
 def create_hint_sentences(location_answers_dict, locations_identifiers_dict, properties_blank_sentences_locations):
+  
+  
   ret ={}
   location_infos_wikidata = {}
   for key,value in location_answers_dict.items():
     location_infos_wikidata[key] = retrieve_location_data(key)
-    for propert, sentence in properties_blank_sentences_locations.items():
-      locations_identifiers_dict[propert] =  get_property_data(location_infos_wikidata[key], propert)
+    prop_sent = copy.copy(properties_blank_sentences_locations)
+    loc_ident = copy.copy(locations_identifiers_dict)
+    print(prop_sent )
+    print(properties_blank_sentences_locations)
+    print(loc_ident )
+    print(locations_identifiers_dict)
+
+    for propert, sentence in prop_sent.items():
+      loc_ident[propert] =  get_property_data(location_infos_wikidata[key], propert)
       #prune the list with multipole entries down to the desired one
-      if len(locations_identifiers_dict[propert]) > 1:
+      if len(loc_ident[propert]) > 1:
         if propert != 'P47' and propert != 'P37' and propert != 'P206' and propert != 'P421' and  propert != 'P463' and propert != 'P793' and propert != 'P38':
-          locations_identifiers_dict[propert] = locations_identifiers_dict[propert][-1]
+          loc_ident[propert] = loc_ident[propert][-1]
       #if entry not null, search for the id of the entry
-      if len(locations_identifiers_dict[propert]) > 0:
-        propety = locations_identifiers_dict[propert]
+      if len(loc_ident[propert]) > 0:
+        propety = loc_ident[propert]
         try:
           e_list = []
           for entry in propety:
             id = entry['id']
             e_list.append(get_entity_name(id))
-          locations_identifiers_dict[propert] = e_list
+          loc_ident[propert] = e_list
         except Exception as e:
           try:
               e_list = []
               for entry in propety:
                 id = entry[0]['id']
                 e_list.append(get_entity_name(id))
-              locations_identifiers_dict[propert] = e_list
+              loc_ident[propert] = e_list
           except Exception as e:
             try:
               e_list = []
               id = propety['id']
               e_list.append(get_entity_name(id))
-              locations_identifiers_dict[propert] = e_list
+              loc_ident[propert] = e_list
             except Exception as e:
               pass
       try:
         if propert == 'P1082':
-          locations_identifiers_dict[propert] = locations_identifiers_dict[propert]['amount']
+          loc_ident[propert] = loc_ident[propert]['amount']
       except Exception as e:
         print(e)
     #now lets choose wich one we use for the sentences (sometimes random for others specific ones)
-    for prop, sentence in properties_blank_sentences_locations.items():
-      for p, val in locations_identifiers_dict.items():
+    for prop, sentence in prop_sent.items():
+      for p, val in loc_ident.items():
         if p == prop:
           if len(val) == 0:
             continue
           elif len(val) == 1:
             word = str(val[0])
-            properties_blank_sentences_locations[p] = sentence.replace('*', word)
+            prop_sent[p] = sentence.replace('*', word)
           else:
             if p != 'P1082':
               try:
-                test =  locations_identifiers_dict[p]
+                test =  loc_ident[p]
                 random_Words = random.sample(test,3)
                 random_Words = ', '.join(random_Words)
               except:
                 try:
-                  test =  locations_identifiers_dict[p]
+                  test =  loc_ident[p]
                   random_Words = random.sample(test,2)
                   random_Words = ', '.join(random_Words)
                 except:
                   random_Words = random.choice(val)
-              properties_blank_sentences_locations[p] = sentence.replace('*', random_Words)
+              prop_sent[p] = sentence.replace('*', random_Words)
             else:
-              properties_blank_sentences_locations[p] = sentence.replace('*', locations_identifiers_dict[p] )
-    ret[key] = properties_blank_sentences_locations
+              prop_sent[p] = sentence.replace('*', loc_ident[p] )
+    ret[key] = prop_sent
   return ret
 
 def get_ranking_forfixed_properties(counted_category_apperances):
@@ -902,18 +951,21 @@ def get_location_hints_fixed_properties(location_answers_dict):
     }
   location_infos_wikidata = {}
   sol = create_hint_sentences(location_answers_dict, locations_identifiers_dict, properties_blank_sentences_locations)
-  inter = {}
+  # inter = {}
   ret={}
   for key, value in sol.items():
+    inter = {}
     for answer,question in location_answers_dict.items():
       if key == answer:
         for code, sentence in value.items():
           if '*' in sentence:
             continue
           else:
-            sim_score = get_similarity_score(question,sentence)
+            # sim_score = get_similarity_score(question,sentence)
+            sim_score = calculate_similarity(question,answer,sentence,sim_score_priority_words)
             inter[code]  = {sentence : sim_score}
-        ret[key] = inter
+    ret[key] = inter
+    ret[key]['question'] = question    
   return ret
 
 #people
@@ -1337,9 +1389,10 @@ def prune_and_ordered_dict(dictionary, n):
   inter1_dict= OrderedDict()
   # bad_categories_list = ['Living_people', 'Living people', '_births', 'births', '_deaths', 'deaths', 'Good_articles', 'Good articles', 'Members','19th', '20th', '21st', 'Capitals in Europe', 'state capitals']
   bad_categories_list = ['Living_people', 'Living people', '_births', 'births', '_deaths', 'deaths', 'Good_articles', 'Good articles', 'Members','19th', 'Capitals in Europe', 'state capitals']
-
+  print(dictionary)
   people_occupations = get_occupations(dictionary)
   print("occu", people_occupations)
+  
   for key, value in dictionary.items():
     inter3_dict= OrderedDict()
     for link, tuplee in value.items():
@@ -1360,7 +1413,7 @@ def prune_and_ordered_dict(dictionary, n):
               contains_bad_word = True
               continue
       except Exception as e:
-        print(e)
+        print("prune_and_ordered_dict", e)
       if contains_bad_word == False:
         inter3_dict[link] = tuplee
     pruned_dict[key] = inter3_dict
@@ -1703,34 +1756,48 @@ def extract_list_elements(html_string):
 
 #searches the occupation for every entry in people list
 def get_occupations(people_list):
+  print(people_list)
+  peop_dict = {}
+
+  if isinstance(people_list, list):
+    for item in people_list:
+      print("Processing item in list:", item)
+      peop_dict[item] = " "
+  elif isinstance(people_list, str):
+    print("Processing string:", people_list)
+    peop_dict[people_list] = " "
+
   occupation_person_dict = {}
-  identifiers = get_wikipedia_identifiers(people_list)
-  properties_list = ['occupation']
-  for name, pid in identifiers.items():
-    inter = get_person_properties(pid, properties_list, people_list)
-    occupation_person_dict[name] = inter['occupation'][0]
+  try:
+    identifiers = get_wikipedia_identifiers(people_list)
+    properties_list = ['occupation']
+    for name, pid in identifiers.items():
+      inter = get_person_properties(pid, properties_list, people_list)
+      occupation_person_dict[name] = inter['occupation'][0]
+  except Exception as e:
+    print('get_occupations', e)
   return occupation_person_dict
 
-#retrieves all of the relate links of a wiki page
-def get_related_links(wiki_link):
-  # Extract the page title from the Wikipedia link
-  title = wiki_link.split('/')[-1]
-  # Format the API URL to get the page content
-  api_url = f'https://en.wikipedia.org/w/api.php?action=query&titles={title}&prop=links&pllimit=max&format=json'
-  # Send a GET request to the API
-  response = requests.get(api_url)
-  if response.status_code == 200:
-    data = response.json()
-    # Extract the page ID from the API response
-    page_id = next(iter(data['query']['pages']))
-    # Check if the page exists and has links
-    if page_id != '-1' and 'links' in data['query']['pages'][page_id]:
-      # Retrieve the links from the API response
-      links = data['query']['pages'][page_id]['links']
-      # Extract the link titles and URLs
-      related_links = [{'url': f'https://en.wikipedia.org/wiki/{link["title"]}', 'title': link['title']} for link in links]
-      return related_links
-  return []
+# #retrieves all of the relate links of a wiki page
+# def get_related_links(wiki_link):
+#   # Extract the page title from the Wikipedia link
+#   title = wiki_link.split('/')[-1]
+#   # Format the API URL to get the page content
+#   api_url = f'https://en.wikipedia.org/w/api.php?action=query&titles={title}&prop=links&pllimit=max&format=json'
+#   # Send a GET request to the API
+#   response = requests.get(api_url)
+#   if response.status_code == 200:
+#     data = response.json()
+#     # Extract the page ID from the API response
+#     page_id = next(iter(data['query']['pages']))
+#     # Check if the page exists and has links
+#     if page_id != '-1' and 'links' in data['query']['pages'][page_id]:
+#       # Retrieve the links from the API response
+#       links = data['query']['pages'][page_id]['links']
+#       # Extract the link titles and URLs
+#       related_links = [{'url': f'https://en.wikipedia.org/wiki/{link["title"]}', 'title': link['title']} for link in links]
+#       return related_links
+#   return []
 
 # function to check if the title consists of two words -> discrad a lot of entries for performance reasons
 def filter_two_word_titles(links):
@@ -2001,10 +2068,13 @@ def get_related_people_from_person_name(person_name):
   modified_text = person_name.replace(' ', '_') #replace spaces with underscores in the name to use it in link
   link = f"{wiki_link}/{modified_text}"
   related_articles = get_related_links(link)
+  # related_articles = get_all_related_links(link)
   filtered_links = filter_two_word_titles(related_articles)
+  if len(filtered_links) < 5:
+    related_articles = get_all_related_links(link)
+    filtered_links = filter_two_word_titles(related_articles)
   related_people_list = check_if_person(filtered_links)
   return related_people_list
-
 """
 Function that gets the pageviews of up to 10 links at a time;
 Args:     dictionary where the keys are the answer-entities and the value is a link_list
@@ -2047,14 +2117,64 @@ Returns:  dictionary where the keys are the answer-entities and the value is
 #     return_dict[key] = ordered_dict_related_person
 #   return return_dict
 
-def get_categories_of_people_list(people_list, limit=5):
+
+
+def test_occu_func(person_answers_dict, related_people_orderd, top_most_popular_people):
+  pprint.pprint(person_answers_dict)
+  pprint.pprint(related_people_orderd)
+  pprint.pprint(top_most_popular_people)
+
+  people_occupations = get_occupations(person_answers_dict)
+  top_most_popular_people_occupations = get_occupations(top_most_popular_people)
+  # correct_occu = {}
+  ret = {}
+  for key,value in person_answers_dict.items():
+    for ans, occu in people_occupations.items():
+      if key == ans:
+        desired_occupation = people_occupations[key]
+        # has_occu = False
+        pers_with_different_occu = {}
+        for pers, p_occu in top_most_popular_people_occupations.items():
+          if desired_occupation in p_occu:
+            print(pers, desired_occupation, p_occu)# has_occu = True
+          else: 
+            pers_with_different_occu[pers] = p_occu
+        print('pers_with_different_occu', pers_with_different_occu)
+        if len(pers_with_different_occu) == 5:
+          for pn, pvs in related_people_orderd.items():
+            if pn not in pers_with_different_occu:
+              try:
+                pers_occu = get_occupations({pn : pvs})
+              
+                if pers_occu[pn] == desired_occupation:
+                  top_most_popular_people[pn] = pvs
+                  # correct_occu[pn] = pvs
+                  print(pers, pers_occu[pn], desired_occupation)
+                  break
+              except Exception as e:
+                continue
+        #   for pn, pvs in top_most_popular_people.items():
+        #     for a,b in pers_with_different_occu.items():
+        # else:
+          ret = top_most_popular_people
+  print('top_most_popular_people')
+  pprint.pprint(top_most_popular_people)
+  
+  return top_most_popular_people
+
+
+def get_categories_of_people_list(people_list, person_answers_dict,limit=5):
   return_dict = {}
   newdic = {}
   for a,b in people_list.items():
     innerDic = OrderedDict()
     for c,d in b.items():
-      innerDic[c] = int(d.replace(',', ''))
-  newdic[a] = dict(sorted(innerDic.items(), key = lambda x: x[1], reverse=True))
+      try:
+        innerDic[c] = int(d.replace(',', ''))
+      except Exception as e:
+        print("get_categories_of_people_list", e)
+
+    newdic[a] = dict(sorted(innerDic.items(), key = lambda x: x[1], reverse=True))
 
   for key,value in newdic.items():
     related_people_orderd = dict(sorted(value.items(), key=lambda x: x[1], reverse=True))   #order the dict after the pageviews in descending order
@@ -2064,9 +2184,13 @@ def get_categories_of_people_list(people_list, limit=5):
     top_most_popular_people = dict(itertools.islice(related_people_orderd.items(), 5))      #take the top 5 most known people from the list
     pprint.pprint(top_most_popular_people)
 
-    if len(related_people_orderd) == 0 or  len(top_most_popular_people) == 0:
+    # top_most_popular_people = test_occu_func(person_answers_dict, related_people_orderd, top_most_popular_people)
+    ttop_most_popular_people = test_occu_func(person_answers_dict, related_people_orderd, top_most_popular_people)
+
+
+    if len(related_people_orderd) == 0 or  len(ttop_most_popular_people) == 0:
       continue
-    categories_of_related_people = get_categories(top_most_popular_people)
+    categories_of_related_people = get_categories(ttop_most_popular_people)
     categories_with_pageviews_person = get_pageviews_for_categories(categories_of_related_people)
     categories_with_subs_and_pageviews_person = get_dict_for_every_location(categories_of_related_people, categories_with_pageviews_person)
     pprint.pprint(categories_with_subs_and_pageviews_person, sort_dicts=False)
@@ -2129,6 +2253,22 @@ def get_categories_with_pv_answerEntities(person_questions_dict):
     for key in b.items():
       inter_list.append((key[0], int(key[1].replace(",", ""))))
     intermediate_ordere[a] = OrderedDict(sorted(inter_list, key=lambda x: x[1], reverse=True))
+
+  bad_categories_list = ['Living_people', 'Living people', '_births', 'births', '_deaths', 'deaths', 'Good_articles', 'Good articles', 'Members','19th', 'Capitals in Europe', 'state capitals']
+
+
+  for k,v in intermediate_ordere.items():
+    inter_list = []
+    for a,b in v.items():
+      contains_word = False 
+      for bad_word in bad_categories_list:
+        if bad_word in a:
+          contains_word = True
+      if contains_word == True: 
+        print(a,b)
+      if contains_word == False: 
+        inter_list.append((a,b))
+    intermediate_ordere[k] = OrderedDict(sorted(inter_list, key=lambda x: x[1], reverse=True))
 
   return intermediate_ordere
 
@@ -2273,7 +2413,10 @@ def calculate_IoU_from_countedCategoryDict(counted_category_apperances):
     for person, number in value.items():
       num_total_categs = 20
       IoU_list.append((person,number,num_total_categs, number/num_total_categs))
-    IoU_dict[key] = IoU_list
+    if IoU_list:
+      IoU_dict[key] = IoU_list
+    else:
+      IoU_dict[key] = [('Placeholder', 0, 20, 1)]
   return IoU_dict
 
 """
@@ -2349,7 +2492,7 @@ def create_hint_sentences_unexCategs(categories_scores_dict, person_answers_dict
         pass
       for sentence in template_sentence_person_list:
         hint_sentence_unexCateg_dict[key].append( sentence.replace('0', occu_str).replace('1', get_category_title(most_unexpected_categories_dict[key][0][0]).split(':')[-1].replace('_', ' ') ))
-  except Exception as e: print(e)
+  except Exception as e: print("create_hint_sentences_unexCategs", e)
   return hint_sentence_unexCateg_dict
 
 def get_person_hints_unexpected_categories(person_answers_dict):
@@ -2372,7 +2515,7 @@ def get_person_hints_unexpected_categories(person_answers_dict):
   related_people_pageviews_dict = get_pageviews_from_linkssssssss(related_people_dict)
   pprint.pprint(related_people_pageviews_dict)
   #time saving for third part (related peoples categories recovery and ordering) - 43m+ (14m-24m)
-  most_popular_related_people_with_categories = get_categories_of_people_list(related_people_pageviews_dict)
+  most_popular_related_people_with_categories = get_categories_of_people_list(related_people_pageviews_dict, person_answers_dict)
 
   #time saving for third part retrieves the categories of the answer-entities - 9m+ (6m)
   answer_entities_with_categories = get_categories_with_pv_answerEntities(person_answers_dict)
@@ -2399,8 +2542,10 @@ def get_person_hints_unexpected_categories(person_answers_dict):
   for key, value in mucd.items():
     for answer,question in person_answers_dict.items():
       if key == answer:
-        sim_score = get_similarity_score(question,value[0])
+        # sim_score = get_similarity_score(question,value[0])
+        sim_score = calculate_similarity(question,answer,value[0],sim_score_priority_words)
         inter[key]  = {value[0] : sim_score}
+        # inter[key]['question'] = question
   return inter
 
 """### Functions for the unexpected-predicate approach:"""
@@ -2429,8 +2574,10 @@ Returns: dict: A dictionary containing hint sentences for each person's properti
 """
 def create_hint_sentences_predicates(properties_person_name_dict, properties_blank_sentences, person_answers_dict):
   person_names = []
+  ques = {}
   for answer, question in person_answers_dict.items():
     person_names.append(answer)
+    ques[answer] = question
   hint_sentence_dict = {}
   for pers_name, value in properties_person_name_dict.items():
     properties_sentences_dict = {}
@@ -2465,6 +2612,9 @@ def create_hint_sentences_predicates(properties_person_name_dict, properties_bla
     
     # properties_sentences_dict = remove_sentences_with_asterisk(properties_sentences_dict)
     hint_sentence_dict[pers_name] = inter
+    for a,b in ques.items():
+      if a == pers_name:
+        hint_sentence_dict[a]['question'] = b
   return hint_sentence_dict
 
 def get_person_hints_unexpected_predicates(person_answers_dict):
@@ -2474,8 +2624,10 @@ def get_person_hints_unexpected_predicates(person_answers_dict):
     for predicate, sentence in value.items():
       for answer,question in person_answers_dict.items():
         if key == answer:
-          sim_score = get_similarity_score(question,sentence)
+          # sim_score = get_similarity_score(question,sentence)
+          sim_score = calculate_similarity(question,answer,sentence,sim_score_priority_words)
           hint_sentences_predicates[key][predicate] = {sentence : sim_score}
+          hint_sentences_predicates[key]['question'] = question
   return hint_sentences_predicates
 
 #years
@@ -3218,6 +3370,48 @@ def get_similarity_score(text1, text2):
   cosine_sim = torch.nn.functional.cosine_similarity(output1.last_hidden_state.mean(dim=1), output2.last_hidden_state.mean(dim=1), dim=1)
   return cosine_sim.item()
 
+# calculate_similarity(question,answer,hint,sim_score_priority_words)
+
+# import spacy
+# import numpy as np
+# from sklearn.metrics.pairwise import cosine_similarity
+
+# import spacy.cli
+
+# # Download the larger English model (en_core_web_md)
+# spacy.cli.download("en_core_web_md")
+
+# # Alternatively, download the smaller English model (en_core_web_sm)
+# spacy.cli.download("en_core_web_sm")
+
+# import spacy
+# from sklearn.metrics.pairwise import cosine_similarity
+
+# Load the spaCy language model with word embeddings
+nlp = spacy.load("en_core_web_md")
+
+def calculate_similarity(question, answer, hint, priority_words=None, priority_weight=1.5):
+  if priority_words is None:
+    priority_words = []
+
+  # if isinstance(answer, int):
+  #   # Convert the integer to a string
+  #   answer = str(answer)
+  # Calculate the word embeddings for the question and answer
+  question_embedding = np.mean([nlp(word).vector for word in question.split()], axis=0)
+  answer_embedding = nlp(str(answer)).vector
+  # Calculate the similarity scores for each hint
+  similarity_scores = []
+  hint_embedding = np.mean([nlp(word).vector for word in hint.split()], axis=0)
+  similarity_score = cosine_similarity([question_embedding, answer_embedding], [hint_embedding, answer_embedding])
+  # Apply a bonus weight if any priority words are present in the hint
+  bonus_weight = priority_weight if any(word in hint for word in priority_words) else 1.0
+  similarity_score[0, 0] *= bonus_weight
+
+  return similarity_score[0, 0]
+
+
+
 """### Dictionary for historical events from vizgr.org"""
 """
 Downloads an XML file from the specified URL and saves it to the specified filename.
@@ -3412,8 +3606,10 @@ def generate_hints_years(qa_dict):
           if category == 'sports':
             for key, value in subdata.items():
               sim_scores[year][category][key] = {}
-              similarity_score = get_similarity_score(q,value)
-              sim_scores[year][category][key][value] = similarity_score
+              if value:
+                # similarity_score = get_similarity_score(q,value)
+                similarity_score = calculate_similarity(q,y,value,sim_score_priority_words)
+                sim_scores[year][category][key][value] = similarity_score
           # elif category == 'thumbcaption':
           #   for i in subdata:
           #     sim_scores[year][category] = {}
@@ -3422,8 +3618,10 @@ def generate_hints_years(qa_dict):
           elif category == 'vizgr':
             for key, value in subdata.items():
               sim_scores[year][category][key] = {}
-              similarity_score = get_similarity_score(q,value)
-              sim_scores[year][category][key][value] = similarity_score
+              if value:
+                # similarity_score = get_similarity_score(q,value)
+                similarity_score = calculate_similarity(q,y,value,sim_score_priority_words)
+                sim_scores[year][category][key][value] = similarity_score
       else:
         continue
   for y, q in qa_dict.items():
