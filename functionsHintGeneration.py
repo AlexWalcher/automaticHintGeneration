@@ -743,7 +743,7 @@ def get_location_hints_unexpected_categories(location_answers_dict):
     related_location_pageviews_dict = get_pageviews_from_linkssssssss(related_location_link_dict)
   # pprint.pprint(related_location_pageviews_dict)
   #time saving for third part (related locations categories recovery and ordering) - 43m+ (14m-24m)
-  most_popular_related_location_with_categories = get_categories_of_people_list(related_location_pageviews_dict)
+  most_popular_related_location_with_categories = get_categories_of_people_list(related_location_pageviews_dict, location_answers_dict)
   #time saving for third part retrieves the categories of the answer-entities - 9m+ (6m)
   answer_entities_with_categories_location = get_categories_with_pv_answerEntities_location(location_answers_dict)
   #time saving for fourth part counts the categories of the answer-entities - 3s
@@ -1768,11 +1768,14 @@ def get_occupations(people_list):
     peop_dict[people_list] = " "
 
   occupation_person_dict = {}
-  identifiers = get_wikipedia_identifiers(people_list)
-  properties_list = ['occupation']
-  for name, pid in identifiers.items():
-    inter = get_person_properties(pid, properties_list, people_list)
-    occupation_person_dict[name] = inter['occupation'][0]
+  try:
+    identifiers = get_wikipedia_identifiers(people_list)
+    properties_list = ['occupation']
+    for name, pid in identifiers.items():
+      inter = get_person_properties(pid, properties_list, people_list)
+      occupation_person_dict[name] = inter['occupation'][0]
+  except Exception as e:
+    print('get_occupations', e)
   return occupation_person_dict
 
 # #retrieves all of the relate links of a wiki page
@@ -2114,13 +2117,63 @@ Returns:  dictionary where the keys are the answer-entities and the value is
 #     return_dict[key] = ordered_dict_related_person
 #   return return_dict
 
-def get_categories_of_people_list(people_list, limit=5):
+
+
+def test_occu_func(person_answers_dict, related_people_orderd, top_most_popular_people):
+  pprint.pprint(person_answers_dict)
+  pprint.pprint(related_people_orderd)
+  pprint.pprint(top_most_popular_people)
+
+  people_occupations = get_occupations(person_answers_dict)
+  top_most_popular_people_occupations = get_occupations(top_most_popular_people)
+  # correct_occu = {}
+  ret = {}
+  for key,value in person_answers_dict.items():
+    for ans, occu in people_occupations.items():
+      if key == ans:
+        desired_occupation = people_occupations[key]
+        # has_occu = False
+        pers_with_different_occu = {}
+        for pers, p_occu in top_most_popular_people_occupations.items():
+          if desired_occupation in p_occu:
+            print(pers, desired_occupation, p_occu)# has_occu = True
+          else: 
+            pers_with_different_occu[pers] = p_occu
+        print('pers_with_different_occu', pers_with_different_occu)
+        if len(pers_with_different_occu) == 5:
+          for pn, pvs in related_people_orderd.items():
+            if pn not in pers_with_different_occu:
+              try:
+                pers_occu = get_occupations({pn : pvs})
+              
+                if pers_occu[pn] == desired_occupation:
+                  top_most_popular_people[pn] = pvs
+                  # correct_occu[pn] = pvs
+                  print(pers, pers_occu[pn], desired_occupation)
+                  break
+              except Exception as e:
+                continue
+        #   for pn, pvs in top_most_popular_people.items():
+        #     for a,b in pers_with_different_occu.items():
+        # else:
+          ret = top_most_popular_people
+  print('top_most_popular_people')
+  pprint.pprint(top_most_popular_people)
+  
+  return top_most_popular_people
+
+
+def get_categories_of_people_list(people_list, person_answers_dict,limit=5):
   return_dict = {}
   newdic = {}
   for a,b in people_list.items():
     innerDic = OrderedDict()
     for c,d in b.items():
-      innerDic[c] = int(d.replace(',', ''))
+      try:
+        innerDic[c] = int(d.replace(',', ''))
+      except Exception as e:
+        print("get_categories_of_people_list", e)
+
     newdic[a] = dict(sorted(innerDic.items(), key = lambda x: x[1], reverse=True))
 
   for key,value in newdic.items():
@@ -2131,9 +2184,13 @@ def get_categories_of_people_list(people_list, limit=5):
     top_most_popular_people = dict(itertools.islice(related_people_orderd.items(), 5))      #take the top 5 most known people from the list
     pprint.pprint(top_most_popular_people)
 
-    if len(related_people_orderd) == 0 or  len(top_most_popular_people) == 0:
+    # top_most_popular_people = test_occu_func(person_answers_dict, related_people_orderd, top_most_popular_people)
+    ttop_most_popular_people = test_occu_func(person_answers_dict, related_people_orderd, top_most_popular_people)
+
+
+    if len(related_people_orderd) == 0 or  len(ttop_most_popular_people) == 0:
       continue
-    categories_of_related_people = get_categories(top_most_popular_people)
+    categories_of_related_people = get_categories(ttop_most_popular_people)
     categories_with_pageviews_person = get_pageviews_for_categories(categories_of_related_people)
     categories_with_subs_and_pageviews_person = get_dict_for_every_location(categories_of_related_people, categories_with_pageviews_person)
     pprint.pprint(categories_with_subs_and_pageviews_person, sort_dicts=False)
@@ -2458,7 +2515,7 @@ def get_person_hints_unexpected_categories(person_answers_dict):
   related_people_pageviews_dict = get_pageviews_from_linkssssssss(related_people_dict)
   pprint.pprint(related_people_pageviews_dict)
   #time saving for third part (related peoples categories recovery and ordering) - 43m+ (14m-24m)
-  most_popular_related_people_with_categories = get_categories_of_people_list(related_people_pageviews_dict)
+  most_popular_related_people_with_categories = get_categories_of_people_list(related_people_pageviews_dict, person_answers_dict)
 
   #time saving for third part retrieves the categories of the answer-entities - 9m+ (6m)
   answer_entities_with_categories = get_categories_with_pv_answerEntities(person_answers_dict)

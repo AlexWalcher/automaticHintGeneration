@@ -43,14 +43,16 @@ def save_as_xlsx_file(year_questions_dict, person_questions_dict, location_quest
     for cat, value in generated_hint_sentences['people'].items():
       if cat == 'categories':
         for pers,hin in value.items():
-          for a,b in hin.items():
-            hint_list.append(a)
+          if pers == answer:
+            for a,b in hin.items():
+              hint_list.append(a)
       elif cat == 'predicates':
         for pers,hin in value.items():
-          for a,b in hin.items():
-            if a != 'question':
-              for c,d in b.items():
-                hint_list.append(c)
+          if pers == answer:
+            for a,b in hin.items():
+              if a != 'question':
+                for c,d in b.items():
+                  hint_list.append(c)
     person_dict['hints'] = hint_list
     person_dict_list.append(person_dict)
   # pprint.pprint(person_dict_list)
@@ -64,10 +66,11 @@ def save_as_xlsx_file(year_questions_dict, person_questions_dict, location_quest
     for cat, value in generated_hint_sentences['locations'].items():
       if cat == 'properties':
         for pers,hin in value.items():
-          for a,b in hin.items():
-            if a != 'question':
-              for c,d in b.items():
-                hint_list.append(c)
+          if pers == answer:
+            for a,b in hin.items():
+              if a != 'question':
+                for c,d in b.items():
+                  hint_list.append(c)
     location_dict['hints'] = hint_list
     location_dict_list.append(location_dict)
   # pprint.pprint(location_dict_list)
