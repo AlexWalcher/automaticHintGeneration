@@ -3064,7 +3064,7 @@ def remove_after_first_opening_bracket(s):
 #get the dict of all the champions league winners
 def champions_league_winners_list():
   champions_league_url = 'List_of_European_Cup_and_UEFA_Champions_League_finals'
-  file = get_all_tables(champions_league_url) #gets all tables of wiki page
+  file = get_all_tables(champions_league_url, 3) #gets all tables of wiki page
 
   champions_league_dict =  dict(zip(file['Season'], file['Winners']))
   champions_league_dict1 = {}
@@ -3087,8 +3087,16 @@ def uefa_euros_winners_list():
   file = get_all_tables(euros_url) #gets all tables of wiki page
 
   euros_dict =  dict(zip(file['Tournament'], file['Winners']))
+  euros_ret = {}
+  for a,b in euros_dict.items():
+    if '[a]' in a:
+      c = a.replace('[a]', '')
+      euros_ret[c] = b
+    else:
+      euros_ret[a] = b
 
-  return euros_dict
+
+  return euros_ret
 
   # #first prune of that huge dict
   # keyw= 'showvteEuropean Cup and UEFA Champions League winners'
