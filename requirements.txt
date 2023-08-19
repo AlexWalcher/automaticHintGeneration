@@ -12,48 +12,24 @@ wikidata
 
 spacy
 numpy
-
 requests
-
 
 wikipedia
 wikipedia-api
 wikidata
 
-
-
 pandas
 SPARQLWrapper	
-
 bs4
 beautifulsoup4
-
-
 sentence_transformers
-
-
 selenium
 
-
-
 scikit-learn
-
 torch
 transformers
-
 webdrivermanager
-
 
 Mapping
 OrderedDict
 Path
-
-cosine_similarity
-
-Firefox
-urlparse
-parse_qs
-TfidfVectorizer
-AutoTokenizer
-AutoModel
-GeckoDriverManager
