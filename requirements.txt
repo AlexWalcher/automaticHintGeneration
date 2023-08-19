@@ -30,32 +30,40 @@ beautifulsoup4
 
 
 sentence_transformers
-SentenceTransformer
+
 sklearn.metrics.pairwise
-cosine_similarity
+
 selenium
-webdriver
+
 selenium.webdriver
-Firefox
+
 spacy.cli
 urllib.parse
-urlparse
-parse_qs
+
 
 
 
 
 sklearn.feature_extraction.text
-TfidfVectorizer
+
 sklearn.metrics.pairwise
 cosine_similarity
 torch
 transformers
-AutoTokenizer
-AutoModel
+
 webdrivermanager
-GeckoDriverManager
+
 
 Mapping
 OrderedDict
 Path
+
+cosine_similarity
+webdriver
+Firefox
+urlparse
+parse_qs
+TfidfVectorizer
+AutoTokenizer
+AutoModel
+GeckoDriverManager
