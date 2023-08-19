@@ -31,7 +31,6 @@ beautifulsoup4
 
 sentence_transformers
 
-sklearn.metrics.pairwise
 
 selenium
 
@@ -42,9 +41,6 @@ urllib.parse
 
 
 
-
-
-sklearn.feature_extraction.text
 
 scikit-learn
 cosine_similarity
