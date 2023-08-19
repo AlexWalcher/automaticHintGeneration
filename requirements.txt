@@ -24,7 +24,7 @@ wikidata
 
 pandas
 SPARQLWrapper	
-JSON
+json
 bs4
 BeautifulSoup
 NavigableString
