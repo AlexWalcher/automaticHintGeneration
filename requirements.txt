@@ -14,7 +14,7 @@ spacy
 numpy
 
 requests
-re
+
 difflib
 pprint
 itertools
