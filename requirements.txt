@@ -49,7 +49,7 @@ OrderedDict
 Path
 
 cosine_similarity
-webdriver
+
 Firefox
 urlparse
 parse_qs
