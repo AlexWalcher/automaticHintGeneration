@@ -4,6 +4,7 @@ import streamlit as st
 from streamlit_option_menu import option_menu
 from pathlib import Path
 import pandas as pd
+import tempfile
 
 with st.sidebar:
     selected = option_menu("Main Menu", ["Home", 'Upload file', 'Year question', 'Person question', 'Location question'],
@@ -82,16 +83,22 @@ elif selected == "Year question":
         if submitted:
             st.write('Thanks for your question, wait a moment until your hint is generated.')
             # with open("/content/automaticHintGeneration/tmp/questionYear.txt", 'a') as writefile:
-            with open("/mount/src/automatichintgeneration/tmp/questionYear.txt", 'a') as writefile:
+            # with open("/mount/src/automatichintgeneration/tmp/questionYear.txt", 'a') as writefile:
+            with tempfile.NamedTemporaryFile() as writefile:
+                ## Writes the SGY to the temporal file
+                # tempSGY.write(uploadedSGY.getbuffer())
+
 
                 item = 'Question: ' + str(Question) + '; ' + 'Answer: ' + year_as_txt
                 writefile.write(item + "\n")
-                writefile.close()
-            with st.spinner('Generating ...'):
-                # file_path = "/content/automaticHintGeneration/tmp/questionYear.txt"
-                file_path = "mount/src/automatichintgeneration/tmp/questionYear.txt"
+                # writefile.close()
+                with st.spinner('Generating ...'):
+                    # file_path = "/content/automaticHintGeneration/tmp/questionYear.txt"
+                    # file_path = "/mount/src/automatichintgeneration/tmp/questionYear.txt"
 
-                gen_hints = generate_hints_from_txt(file_path)
+                    # gen_hints = generate_hints_from_txt(file_path)
+
+                    gen_hints = generate_hints_from_txt(writefile.name)
             st.write('Generated hints:')
             st.write(gen_hints)
 
