@@ -12,7 +12,7 @@ wikidata
 
 spacy
 numpy
-time
+
 requests
 re
 difflib
