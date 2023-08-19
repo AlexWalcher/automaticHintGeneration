@@ -5,6 +5,8 @@ from streamlit_option_menu import option_menu
 from pathlib import Path
 import pandas as pd
 import tempfile
+from tempfile import NamedTemporaryFile
+
 
 with st.sidebar:
     selected = option_menu("Main Menu", ["Home", 'Upload file', 'Year question', 'Person question', 'Location question'],
@@ -69,6 +71,13 @@ elif selected == "Upload file":
                         mime='application/octet-stream')
 
         st.write(gen_hints)
+
+elif selected == "Test":
+    uploaded_file = st.file_uploader("File upload", type='xlsx')
+    with NamedTemporaryFile(dir='.', suffix='.xlsx') as f:
+        f.write(uploaded_file.getbuffer())
+        st.write(f.name)
+
 
 elif selected == "Year question":
     st.header('Enter the years-question with the answer and wait for the corresponding hint to be generated.')
