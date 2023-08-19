@@ -6,6 +6,32 @@ Most of them are reused/shared between the different hint-types (years, people, 
 from code import InteractiveInterpreter
 from importsHintGeneration import *
 
+def download_spacy_models():
+    spacy.cli.download("en_core_web_md")
+    spacy.cli.download("en_core_web_sm")
+
+download_spacy_models()
+
+import lxml.etree as ET
+import xml.etree.ElementTree as ET
+import pandas as pd
+from SPARQLWrapper import SPARQLWrapper, JSON
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+from selenium import webdriver
+from selenium.webdriver import Firefox
+from sklearn.metrics.pairwise import cosine_similarity
+from bs4 import BeautifulSoup
+from urllib.parse import urlparse, parse_qs
+from collections import OrderedDict
+import collections.abc as collections
+from collections.abc import Mapping
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from transformers import AutoTokenizer, AutoModel
+from webdrivermanager import GeckoDriverManager
+
+
 # gl_person_questions_dict_from_txt = {}
 # # gl_location_questions_dict = {}
 # # gl_year_questions_dict = {}
