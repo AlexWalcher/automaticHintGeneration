@@ -46,7 +46,7 @@ urllib.parse
 
 sklearn.feature_extraction.text
 
-sklearn.metrics.pairwise
+scikit-learn
 cosine_similarity
 torch
 transformers
