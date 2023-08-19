@@ -17,7 +17,7 @@ requests
 
 
 wikipedia
-wikipediaapi
+wikipedia-api
 wikidata
 
 
