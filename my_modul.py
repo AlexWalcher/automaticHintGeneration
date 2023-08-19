@@ -11,7 +11,8 @@ from functionsHintGeneration import *
 
 #file_path = "./tmp/testSet_WebApp.xlsx"
 # file_path = "./automaticHintGeneration/testSet.xlsx"
-file_path = "/content/automaticHintGeneration/testSet.xlsx"
+file_path='/mount/src/automatichintgeneration/testSet.xlsx'
+# file_path = "/content/automaticHintGeneration/testSet.xlsx"
 df_list = load_file_path(file_path)
 person_df = df_list["person"]
 year_df = df_list["year"]
