@@ -1,8 +1,7 @@
 from my_modul import *
 
 import streamlit as st
-# from streamlit_option_menu 
-# import option_menu
+from streamlit_option_menu import option_menu
 from pathlib import Path
 import pandas as pd
 

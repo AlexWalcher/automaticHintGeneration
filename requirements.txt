@@ -10,6 +10,7 @@ lxml
 pageviewapi
 Wikipedia-API
 wikidata
+streamlit-option-menu
 
 spacy
 numpy
