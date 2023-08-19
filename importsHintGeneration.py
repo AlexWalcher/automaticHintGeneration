@@ -19,27 +19,27 @@ directory = "tmp" # Directory
 parent_dir = "/content/automaticHintGeneration" # Parent Directory path
 path = os.path.join(parent_dir, directory) # Path
 
-# apt_install('apt-transport-https')
-# install('selenium')
-# apt_install('firefox')
-# install('webdrivermanager')
-# # apt_install('firefox-geckodriver')
-# # install('geckodriver-autoinstaller')
-# install('sparqlwrapper')
-# install('pageviewapi')
-# install('sentence-transformers')
-# install('wikipedia')
-# install('requests')
-# install('lxml')
-# install('pageviewapi')
-# install('Wikipedia-API')
-# install('wikidata')
+apt_install('apt-transport-https')
+install('selenium')
+apt_install('firefox')
+install('webdrivermanager')
+# apt_install('firefox-geckodriver')
+# install('geckodriver-autoinstaller')
+install('sparqlwrapper')
+install('pageviewapi')
+install('sentence-transformers')
+install('wikipedia')
+install('requests')
+install('lxml')
+install('pageviewapi')
+install('Wikipedia-API')
+install('wikidata')
 
 #new imports
 import random
 import copy
 import spacy
-import time
+# import time
 import requests
 import re
 import difflib
@@ -85,13 +85,13 @@ from transformers import AutoTokenizer, AutoModel
 from webdrivermanager import GeckoDriverManager
 
 from pathlib import Path
-import subprocess
-subprocess.call(["npm","init"])
-subprocess.call(["npm","install"])
+# import subprocess
+# subprocess.call(["npm","init"])
+# subprocess.call(["npm","install"])
 
 #Streamlit imports:
-# install('streamlit')
-# install('streamlit-option-menu')
+install('streamlit')
+install('streamlit-option-menu')
 import streamlit as st
 from streamlit_option_menu import option_menu
 
