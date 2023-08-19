@@ -1,0 +1,11 @@
+selenium
+webdrivermanager
+sparqlwrapper
+pageviewapi
+sentence-transformers
+wikipedia
+requests
+lxml
+pageviewapi
+Wikipedia-API
+wikidata
