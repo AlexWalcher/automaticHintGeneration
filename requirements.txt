@@ -27,8 +27,8 @@ SPARQLWrapper
 
 bs4
 beautifulsoup4
-NavigableString
-Tag
+
+
 sentence_transformers
 SentenceTransformer
 sklearn.metrics.pairwise
