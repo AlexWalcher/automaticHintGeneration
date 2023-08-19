@@ -92,8 +92,8 @@ from pathlib import Path
 #Streamlit imports:
 # install('streamlit')
 # install('streamlit-option-menu')
-import streamlit as st
-from streamlit_option_menu import option_menu
+# import streamlit as st
+# from streamlit_option_menu import option_menu
 
 print("\n")
 print("finished imports")
