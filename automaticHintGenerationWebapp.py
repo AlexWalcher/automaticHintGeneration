@@ -9,8 +9,8 @@ from tempfile import NamedTemporaryFile
 
 
 with st.sidebar:
-    selected = option_menu("Main Menu", ["Home", 'Upload file', 'Year question', 'Person question', 'Location question'],
-        icons=['house', 'upload', '123', 'person', 'compass'], menu_icon="cast", default_index=0)
+    selected = option_menu("Main Menu", ["Home", 'Upload file', 'Test', 'Year question', 'Person question', 'Location question'],
+        icons=['house', 'upload','upload', '123', 'person', 'compass'], menu_icon="cast", default_index=0)
 
 if selected == "Home":
     st.title('Automatic Hint Generation using Wikipedia')
