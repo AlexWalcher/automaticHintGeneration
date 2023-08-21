@@ -16,6 +16,7 @@ if selected == "Home":
 elif selected == "Upload file":
     st.header('You have the option to upload a file with multiple different questions and recieve a corresponding download file with all the hints.')
     st.subheader('Upload:')
+    gen_hints = {}
     uploaded_file = st.file_uploader("Choose a xlsx file", type=['xlsx', 'csv'])
     if uploaded_file is not None:
       st.write('Thanks for your question, wait a moment until your hint is generated.')
@@ -68,6 +69,7 @@ elif selected == "Upload file":
 elif selected == "Year question":
     st.header('Enter the years-question with the answer and wait for the corresponding hint to be generated.')
     st.subheader('Input:')
+    gen_hints = {}
     with st.form(key="Year_Form :", clear_on_submit = True):
         Question=st.text_input(label='Please enter your question') #Collect user feedback
         #Answer=st.number_input(label='Please enter the corresponding answer') #Collect user feedback
@@ -91,6 +93,7 @@ elif selected == "Year question":
 elif selected == "Location question":
     st.header('Enter the location-question with the answer and wait for the corresponding hint to be generated.')
     st.subheader('Input:')
+    gen_hints = {}
     with st.form(key="Form :", clear_on_submit = True):
         Question=st.text_input(label='Please enter your question') #Collect user feedback
         Answer=st.text_input(label='Please enter the corresponding answer') #Collect user feedback
@@ -111,6 +114,7 @@ elif selected == "Location question":
 elif selected == "Person question":
     st.header('Enter the person-question with the answer and wait for the corresponding hint to be generated.')
     st.subheader('Input:')
+    gen_hints = {}
     with st.form(key="Form :", clear_on_submit = True):
         Question=st.text_input(label='Please enter your question') #Collect user feedback
         Answer=st.text_input(label='Please enter the corresponding answer') #Collect user feedback
@@ -124,6 +128,7 @@ elif selected == "Person question":
                 writefile.close()
             with st.spinner('Generating ...'):
                 file_path = "/mount/src/automatichintgeneration/tmp/questionPerson.txt"
+                st.write()
                 gen_hints = generate_hints_from_txt(file_path)
             st.write('Generated hints:')
             st.write(gen_hints)
