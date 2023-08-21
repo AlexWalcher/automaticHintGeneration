@@ -77,6 +77,7 @@ elif selected == "Year question":
         submitted = st.form_submit_button('Submit')
         if submitted:
             st.write('Thanks for your question, wait a moment until your hint is generated.')
+            open("/mount/src/automatichintgeneration/tmp/questionYear.txt", 'w').close()
             with open("/mount/src/automatichintgeneration/tmp/questionYear.txt", 'a') as writefile:
                 item = 'Question: ' + str(Question) + '; ' + 'Answer: ' + year_as_txt
                 writefile.write(item + "\n")
@@ -96,6 +97,7 @@ elif selected == "Location question":
         submitted = st.form_submit_button('Submit')
         if submitted:
             st.write('Thanks for your question, wait a moment until your hint is generated.')
+            open("/mount/src/automatichintgeneration/tmp/questionLocation.txt", 'w').close()
             with open("/mount/src/automatichintgeneration/tmp/questionLocation.txt", 'a') as writefile:
                 item = 'Question: ' + str(Question) + '; ' + 'Answer: ' + str(Answer)
                 writefile.write(item + "\n")
@@ -115,6 +117,7 @@ elif selected == "Person question":
         submitted = st.form_submit_button('Submit')
         if submitted:
             st.write('Thanks for your question, wait a moment until your hint is generated.')
+            open("/mount/src/automatichintgeneration/tmp/questionPerson.txt", 'w').close()
             with open("/mount/src/automatichintgeneration/tmp/questionPerson.txt", 'a') as writefile:
                 item = 'Question: ' + str(Question) + '; ' + 'Answer: ' + str(Answer)
                 writefile.write(item + "\n")
