@@ -188,6 +188,69 @@ Given a URL, this function opens the url and retrieves the information stored in
 #       data.append([cell.text.strip() for cell in row.find_all('td')])
 #   return (headers, data)
 
+def fetch_wikidata(params):
+  url = 'https://www.wikidata.org/w/api.php'
+  try:
+    return requests.get(url, params=params)
+  except:
+    return 'There was and error'
+
+def get_occupation_from_wikidata(people_list):
+  # First we need to retrieve the Q-identifier for the pserons wikidata page
+  occu_dict={}
+  for a,b in people_list.items():
+    # print(a,b)
+    occu = ''
+    occu_list = []
+    person_name = (a)
+
+    try:
+      params_person_id = {
+              'action': 'wbsearchentities',
+              'format': 'json',
+              'search': person_name,
+              'language': 'en'
+          }
+      data_person_id = fetch_wikidata(params_person_id)
+      data_person_id = data_person_id.json()
+      person_wikidata_id = data_person_id['search'][0]['id'] # select first search result ID
+      # print(person_wikidata_id)
+
+      # Next we need to retrieve the Q-identifiers for the occupations
+      params_occupation_id = {
+                  'action': 'wbgetentities',
+                  'ids':person_wikidata_id, 
+                  'format': 'json',
+                  'languages': 'en'
+              }
+      data_occupation_id = fetch_wikidata(params_occupation_id)
+      data_occupation_id = data_occupation_id.json()
+      # print(data_occupation_id['entities'][person_wikidata_id]['claims'])
+      occupation_ids_list = data_occupation_id['entities'][person_wikidata_id]['claims']['P106'] #P106 is property id of occupation 
+      # print(occupation_ids_list)
+      person_occupations_ids = [v['mainsnak']['datavalue']['value']['id'] for v in occupation_ids_list]
+      # print(person_occupations_ids)
+
+      for oc in person_occupations_ids:
+        # Next we need to retrieve the value for the corresponding occupation-id
+        params_occupation_value = {
+                    'action': 'wbsearchentities',
+                    'format': 'json',
+                    # 'search': person_occupations_ids[0],
+                    'search': oc,
+                    'language': 'en'
+                }
+        data_occupation_value = fetch_wikidata(params_occupation_value)
+        data_occupation_value = data_occupation_value.json()
+        occu = data_occupation_value['search'][0]['display']['label']['value']
+        occu_list.append(occu)
+    
+    except Exception as e:
+      print('error: get_occupation_from_wikidata: ', e)
+    occu_dict[a] = occu_list
+  return occu_dict
+
+
 def get_table_info(url, table_number=2):
   
   test= url.lower()
@@ -1416,7 +1479,7 @@ def prune_and_ordered_dict(dictionary, n):
   # bad_categories_list = ['Living_people', 'Living people', '_births', 'births', '_deaths', 'deaths', 'Good_articles', 'Good articles', 'Members','19th', '20th', '21st', 'Capitals in Europe', 'state capitals']
   bad_categories_list = ['Living_people', 'Living people', '_births', 'births', '_deaths', 'deaths', 'Good_articles', 'Good articles', 'Members','19th', 'Capitals in Europe', 'state capitals']
   print(dictionary)
-  people_occupations = get_occupations(dictionary)
+  people_occupations = get_occupation_from_wikidata(dictionary)
   print("occu", people_occupations)
   
   for key, value in dictionary.items():
@@ -2150,8 +2213,8 @@ def test_occu_func(person_answers_dict, related_people_orderd, top_most_popular_
   pprint.pprint(related_people_orderd)
   pprint.pprint(top_most_popular_people)
 
-  people_occupations = get_occupations(person_answers_dict)
-  top_most_popular_people_occupations = get_occupations(top_most_popular_people)
+  people_occupations = get_occupation_from_wikidata(person_answers_dict)
+  top_most_popular_people_occupations = get_occupation_from_wikidata(top_most_popular_people)
   # correct_occu = {}
   ret = {}
   for key,value in person_answers_dict.items():
@@ -2170,7 +2233,7 @@ def test_occu_func(person_answers_dict, related_people_orderd, top_most_popular_
           for pn, pvs in related_people_orderd.items():
             if pn not in pers_with_different_occu:
               try:
-                pers_occu = get_occupations({pn : pvs})
+                pers_occu = get_occupation_from_wikidata({pn : pvs})
               
                 if pers_occu[pn] == desired_occupation:
                   top_most_popular_people[pn] = pvs
@@ -2194,13 +2257,17 @@ def get_categories_of_people_list(people_list, person_answers_dict,limit=5):
   newdic = {}
   for a,b in people_list.items():
     innerDic = OrderedDict()
-    for c,d in b.items():
-      try:
-        innerDic[c] = int(d.replace(',', ''))
-      except Exception as e:
-        print("get_categories_of_people_list", e)
+    if b:
+      for c,d in b.items():
+        try:
+          innerDic[c] = int(d.replace(',', ''))
+        except Exception as e:
+          print("get_categories_of_people_list", e)
 
-    newdic[a] = dict(sorted(innerDic.items(), key = lambda x: x[1], reverse=True))
+      newdic[a] = dict(sorted(innerDic.items(), key = lambda x: x[1], reverse=True))
+    else:
+      # print("HUPS")
+      newdic[a] = {}
 
   for key,value in newdic.items():
     related_people_orderd = dict(sorted(value.items(), key=lambda x: x[1], reverse=True))   #order the dict after the pageviews in descending order
@@ -2215,6 +2282,7 @@ def get_categories_of_people_list(people_list, person_answers_dict,limit=5):
 
 
     if len(related_people_orderd) == 0 or  len(ttop_most_popular_people) == 0:
+      return_dict[key] = {}
       continue
     categories_of_related_people = get_categories(ttop_most_popular_people)
     categories_with_pageviews_person = get_pageviews_for_categories(categories_of_related_people)
@@ -2499,25 +2567,44 @@ template_sentence_person_list = ['The person you are looking for is/was occupied
 
 #takes the categories scores dict and chooses the category with the highest score
 def create_hint_sentences_unexCategs(categories_scores_dict, person_answers_dict):
-  people_occupations = get_occupations(person_answers_dict)
+  people_occupations = get_occupation_from_wikidata(person_answers_dict)
   most_unexpected_categories_dict = {}
   hint_sentence_unexCateg_dict = {}
+  # print('ok')
   try:
+    # print("WTF")
     for key,value in categories_scores_dict.items():
-      categories_scores_dict[key] = OrderedDict(sorted(value.items(), key=lambda x: x[1], reverse=True))
-      most_unexpected_categories_dict[key] = (next(iter(value.items())), people_occupations[key])
+      if value:
+        categories_scores_dict[key] = OrderedDict(sorted(value.items(), key=lambda x: x[1], reverse=True))
+        most_unexpected_categories_dict[key] = (next(iter(value.items())), people_occupations[key])
+      else: 
+        most_unexpected_categories_dict[key] = OrderedDict()
     occu_str = 'television_presenter'
+    # print('most_unexpected_categories_dict')
+    # pprint.pprint(most_unexpected_categories_dict)
     for key,value in most_unexpected_categories_dict.items():
+      combined_string = ""
       hint_sentence_unexCateg_dict[key] = []
       try:
-        if people_occupations[key] == 'Racing':
-          occu_str = people_occupations[key]
+        # if people_occupations[key] == 'Racing':
+        #   occu_str = people_occupations[key]
+        # else:
+        #   occu_str = people_occupations[key]
+        if len(people_occupations[key]) > 1:
+          combined_string = ', '.join(people_occupations[key])  # Combine multiple entries with a comma and space
+        elif len(entries) == 1:
+          combined_string = people_occupations[key][0]
         else:
-          occu_str = people_occupations[key]
+          combined_string = 'television_presenter'
+
       except Exception as e:
         pass
-      for sentence in template_sentence_person_list:
-        hint_sentence_unexCateg_dict[key].append( sentence.replace('0', occu_str).replace('1', get_category_title(most_unexpected_categories_dict[key][0][0]).split(':')[-1].replace('_', ' ') ))
+      if most_unexpected_categories_dict[key]:
+        for sentence in template_sentence_person_list:
+          hint_sentence_unexCateg_dict[key].append( sentence.replace('0', combined_string).replace('1', get_category_title(most_unexpected_categories_dict[key][0][0]).split(':')[-1].replace('_', ' ') ))
+      else:
+        hint_sentence_unexCateg_dict[key] = []
+
   except Exception as e: print("create_hint_sentences_unexCategs", e)
   return hint_sentence_unexCateg_dict
 
@@ -2569,8 +2656,11 @@ def get_person_hints_unexpected_categories(person_answers_dict):
     for answer,question in person_answers_dict.items():
       if key == answer:
         # sim_score = get_similarity_score(question,value[0])
-        sim_score = calculate_similarity(question,answer,value[0],sim_score_priority_words)
-        inter[key]  = {value[0] : sim_score}
+        if value:
+          sim_score = calculate_similarity(question,answer,value[0],sim_score_priority_words)
+          inter[key]  = {value[0] : sim_score}
+        else:
+          inter[key]  = {}
         # inter[key]['question'] = question
   return inter
 
