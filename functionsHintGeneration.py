@@ -2122,8 +2122,8 @@ Retrieves the Wikipedia identifiers for a list of person names.
 Args: person_names (list): A list of person names.
 Returns: dict: A dictionary mapping person names to their Wikipedia identifiers.
 """
-def get_wikipedia_identifiers(person_names):
-  base_url = "https://en.wikipedia.org/w/api.php"
+def get_wikipedia_identifiers(person_names, base_url = "https://en.wikipedia.org/w/api.php"):
+  # base_url = "https://en.wikipedia.org/w/api.php"
   identifiers = {}
   for person_name in person_names:
     params = {
@@ -2144,6 +2144,27 @@ def get_wikipedia_identifiers(person_names):
             identifiers[person_name] = wikipedia_id
           else:
             identifiers[person_name] = None
+        else:
+          print('else')
+          base_url = "https://de.wikipedia.org/w/api.php"
+          params = {
+              "action": "query",
+              "format": "json",
+              "titles": person_name,
+              "prop": "pageprops",
+              "ppprop": "wikibase_item"
+          }
+          response = requests.get(base_url, params=params)
+          data = response.json()
+          pages = data.get("query", {}).get("pages")
+          if pages:
+            for page in pages.values():
+              if "pageprops" in page:
+                wikipedia_id = page["pageprops"].get("wikibase_item")
+                if wikipedia_id:
+                  identifiers[person_name] = wikipedia_id
+                else:
+                  identifiers[person_name] = None
   return identifiers
 
 """
@@ -2679,7 +2700,11 @@ def get_properties_predicates_hints(person_answers_dict):
   identifiers = get_wikipedia_identifiers(person_names)
   properties_person_name_dict = {}
   for name, pid in identifiers.items():
-    properties_person_name_dict[name] = get_person_properties(pid, list_of_properties, person_answers_dict)
+    inter = get_person_properties(pid, list_of_properties, person_answers_dict)
+    if inter:
+      properties_person_name_dict[name] = inter
+    else:
+      properties_person_name_dict[name] = ''
   return properties_person_name_dict
 
 """
@@ -2737,6 +2762,7 @@ def get_person_hints_unexpected_predicates(person_answers_dict):
   properties_person_name_dict = get_properties_predicates_hints(person_answers_dict)
   hint_sentences_predicates = create_hint_sentences_predicates(properties_person_name_dict, properties_blank_sentences, person_answers_dict)
   for key, value in hint_sentences_predicates.items():
+    # if value:
     for predicate, sentence in value.items():
       for answer,question in person_answers_dict.items():
         if key == answer:
