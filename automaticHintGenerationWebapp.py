@@ -84,9 +84,11 @@ if selected == "Tester2":
         destination_file.write(data)
         destination_file.close()
 
-        test_path = os.path.join(save_path, '/data/testSet_WebApp.xlsx')
-        df = pd.read_excel(test_path, sheet_name='Sheet1')
-        st.write(df)
+        
+        # test_path = os.path.join(save_path, '/data/testSet_WebApp.xlsx')
+        # df = pd.read_excel(test_path, sheet_name='Sheet1')
+        # st.write(df)
+        st.write(os.listdir(os.getcwd()))
 
 
 
@@ -106,7 +108,7 @@ elif selected == "Uploader file":
             save_path = os.getcwd()
             test_path = os.path.join(save_path, '/data/')
             st.write(test_path)           
-            complete_name = os.path.join(test_path, questionYear.txt)
+            complete_name = os.path.join(test_path, 'questionYear.txt')
             open(complete_name, 'w').close()
             with open(complete_name, 'a') as writefile:
                 item = 'Question: ' + str(Question) + '; ' + 'Answer: ' + year_as_txt
