@@ -3085,10 +3085,10 @@ def get_all_tables(page_name, table_number=2):
   html = wikipedia.page(page_name).html().encode("UTF-8")
   try: 
       df = pd.read_html(html)[ table_number]  # Try 2nd table first as most pages contain contents table first
-      print(df)
+      # print(df)
   except IndexError:
       df = pd.read_html(html)[0]
-      print(df)
+      # print(df)
 
 
   return df
@@ -3204,23 +3204,43 @@ def remove_after_first_opening_bracket(s):
 #   return tmp2
 
 #get the dict of all the champions league winners
+
+#get the dict of all the champions league winners
 def champions_league_winners_list():
   champions_league_url = 'List_of_European_Cup_and_UEFA_Champions_League_finals'
-  file = get_all_tables(champions_league_url, 3) #gets all tables of wiki page
+  try:
+    file = get_all_tables(champions_league_url, 3) #gets all tables of wiki page
 
-  champions_league_dict =  dict(zip(file['Season'], file['Winners']))
-  champions_league_dict1 = {}
-  # print(champions_league_dict)
+    champions_league_dict =  dict(zip(file['Season'], file['Winners']))
+    champions_league_dict1 = {}
+    # print(champions_league_dict)
 
-  for a,b in champions_league_dict.items():
-    old_substring = "â\\x80\\x93"
-    new_substring = '/'
-    new_string = a.replace(old_substring, new_substring)
-    old_substring = "â"
-    new_substring = '/'
-    new_string1 = new_string.replace(old_substring, new_substring)
+    for a,b in champions_league_dict.items():
+      old_substring = "â\\x80\\x93"
+      new_substring = '/'
+      new_string = a.replace(old_substring, new_substring)
+      old_substring = "â"
+      new_substring = '/'
+      new_string1 = new_string.replace(old_substring, new_substring)
 
-    champions_league_dict1[new_string1] = b
+      champions_league_dict1[new_string1] = b
+  except Exception as e:
+    print('ERROR: champions_league_winners_list', e)
+    file = get_all_tables(champions_league_url, 2) #gets all tables of wiki page
+
+    champions_league_dict =  dict(zip(file['Season'], file['Winners']))
+    champions_league_dict1 = {}
+    # print(champions_league_dict)
+
+    for a,b in champions_league_dict.items():
+      old_substring = "â\\x80\\x93"
+      new_substring = '/'
+      new_string = a.replace(old_substring, new_substring)
+      old_substring = "â"
+      new_substring = '/'
+      new_string1 = new_string.replace(old_substring, new_substring)
+
+      champions_league_dict1[new_string1] = b
   return champions_league_dict1
 
 #get the dict of all the champions league winners
@@ -3368,12 +3388,12 @@ def winter_olympics_hosts_list():
 
 
 #write all of the winners of the different sports categories into lists
-cl_all = champions_league_winners_list() #For the Champions league,
 euro_all = uefa_euros_winners_list() #For Football-Euros
 worlds_all = uefa_worlds_winners_list() #For Football-Worlds
 f1_all = f1_winners_list() #For Fromula1
 summer_olympics_all = summer_olympics_hosts_list() #For OlympicSummerGames
 winter_olympics_all = winter_olympics_hosts_list() #For OlympicWinterGames
+cl_all = champions_league_winners_list() #For the Champions league,
 
 '''
 takes a list of years and then creates a dict of dicts, where (if available) the most popular sports events of that year are saved as hints.
