@@ -3388,12 +3388,12 @@ def winter_olympics_hosts_list():
 
 
 #write all of the winners of the different sports categories into lists
-cl_all = champions_league_winners_list() #For the Champions league,
 euro_all = uefa_euros_winners_list() #For Football-Euros
 worlds_all = uefa_worlds_winners_list() #For Football-Worlds
 f1_all = f1_winners_list() #For Fromula1
 summer_olympics_all = summer_olympics_hosts_list() #For OlympicSummerGames
 winter_olympics_all = winter_olympics_hosts_list() #For OlympicWinterGames
+cl_all = champions_league_winners_list() #For the Champions league,
 
 '''
 takes a list of years and then creates a dict of dicts, where (if available) the most popular sports events of that year are saved as hints.
