@@ -109,9 +109,12 @@ elif selected == "Uploader file":
         if submitted:
             st.write('Thanks for your question, wait a moment until your hint is generated.')
             save_path = os.getcwd()
-            test_path = os.path.join(save_path, '/data/')
+            test_path = os.path.join(save_path, 'data')
             st.write(test_path)           
-            complete_name = os.path.join(test_path, 'questionYear.txt')
+            # complete_name = os.path.join(test_path, 'questionYear.txt')
+            complete_name = test_path + '/questionYear.txt'
+            st.write(complete_name)           
+
             open(complete_name, 'w').close()
             with open(complete_name, 'a') as writefile:
                 item = 'Question: ' + str(Question) + '; ' + 'Answer: ' + year_as_txt
