@@ -49,11 +49,12 @@ if selected == "Tester1":
     st.button("Upload file to Sandbox", on_click=upload)
 
 if selected == "Tester2":
-    st.write(os.getcwd())
-    st.write(__file__)
-    st.write(os.path.abspath(__file__))
-    st.write(os.path.dirname(os.path.abspath(__file__)))
+    st.write(os.getcwd())   # /app/automatichintgeneration
+    st.write(__file__)      # /app/automatichintgeneration/automaticHintGenerationWebapp.py
+    st.write(os.path.abspath(__file__)) #/app/automatichintgeneration/automaticHintGenerationWebapp.py
+    st.write(os.path.dirname(os.path.abspath(__file__)))# /app/automatichintgeneration
     uploaded_file = st.file_uploader("Choose a file")
+
     if uploaded_file is not None:
         # To read file as bytes:
         bytes_data = uploaded_file.getvalue()
@@ -74,7 +75,11 @@ if selected == "Tester2":
         data = uploaded_file.getvalue().decode('utf-8')
         parent_path = pathlib.Path(__file__).parent.parent.resolve()
         st.write(parent_path)           
-        save_path = os.path.join(parent_path, "data")
+        parent_path2 = pathlib.Path(__file__).parent.resolve()
+        st.write(parent_path2) 
+        save_path = os.getcwd()
+        st.write(save_path)           
+
         complete_name = os.path.join(save_path, uploaded_file.name)
         destination_file = open(complete_name, "w")
         destination_file.write(data)
