@@ -11,8 +11,8 @@ from pathlib import Path
 import pandas as pd
 
 with st.sidebar:
-    selected = option_menu("Main Menu", ['Tester1','Tester2', "Home", 'Upload file', 'Year question', 'Person question', 'Location question'],
-        icons=['house', 'house','house', 'upload', '123', 'person', 'compass'], menu_icon="cast", default_index=0)
+    selected = option_menu("Main Menu", ['Tester1','Tester2', "Home","Uploader file", 'Upload file', 'Year question', 'Person question', 'Location question'],
+        icons=['house', 'house','house', 'upload', 'upload', '123', 'person', 'compass'], menu_icon="cast", default_index=0)
 
 if selected == "Tester1":
     st.title('Automatic Hint Generation using Wikipedia')
@@ -79,14 +79,44 @@ if selected == "Tester2":
         st.write(parent_path2) 
         save_path = os.getcwd()
         st.write(save_path)           
-
         complete_name = os.path.join(save_path, uploaded_file.name)
         destination_file = open(complete_name, "w")
         destination_file.write(data)
         destination_file.close()
 
+        test_path = os.path.join(save_path, '/data/testSet_WebApp.xlsx')
+        df = pd.read_excel(test_path, sheet_name='Sheet1')
+        st.write(df)
 
 
+
+elif selected == "Uploader file":
+    st.header('Enter the years-question with the answer and wait for the corresponding hint to be generated.')
+    st.subheader('Input:')
+    gen_hints = {}
+    with st.form(key="Year_Form :", clear_on_submit = True):
+        Question=st.text_input(label='Please enter your question') #Collect user feedback
+        #Answer=st.number_input(label='Please enter the corresponding answer') #Collect user feedback
+        Answer=st.number_input(label='Please enter the corresponding answer', min_value=0, max_value=2050, value=2022, format="%i") #Collect user feedback
+        year_as_txt = str(Answer)
+        Answer = int(2018)
+        submitted = st.form_submit_button('Submit')
+        if submitted:
+            st.write('Thanks for your question, wait a moment until your hint is generated.')
+            save_path = os.getcwd()
+            test_path = os.path.join(save_path, '/data/')
+            st.write(test_path)           
+            complete_name = os.path.join(test_path, questionYear.txt)
+            open(complete_name, 'w').close()
+            with open(complete_name, 'a') as writefile:
+                item = 'Question: ' + str(Question) + '; ' + 'Answer: ' + year_as_txt
+                writefile.write(item + "\n")
+                writefile.close()
+            with st.spinner('Generating ...'):
+                file_path = complete_name
+                gen_hints = generate_hints_from_txt(file_path)
+            st.write('Generated hints:')
+            st.write(gen_hints)
 
 if selected == "Home":
     st.title('Automatic Hint Generation using Wikipedia')
