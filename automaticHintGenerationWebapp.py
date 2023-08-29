@@ -10,10 +10,10 @@ from pathlib import Path
 import pandas as pd
 
 with st.sidebar:
-    selected = option_menu("Main Menu", ['Test', "Home", 'Upload file', 'Year question', 'Person question', 'Location question'],
-        icons=['house', 'house', 'upload', '123', 'person', 'compass'], menu_icon="cast", default_index=0)
+    selected = option_menu("Main Menu", ['Tester1','Tester2', "Home", 'Upload file', 'Year question', 'Person question', 'Location question'],
+        icons=['house', 'house','house', 'upload', '123', 'person', 'compass'], menu_icon="cast", default_index=0)
 
-if selected == "Tester":
+if selected == "Tester1":
     st.title('Automatic Hint Generation using Wikipedia')
     st.subheader('This WebApp takes a question, answer pair and returns a corresponding hint.')
 
@@ -42,6 +42,68 @@ if selected == "Tester":
             st.session_state["upload_state"] = "Saved " + complete_name + " successfully!"
 
     st.button("Upload file to Sandbox", on_click=upload)
+
+if selected == "Tester2":
+    st.header('You have the option to upload a file with multiple different questions and recieve a corresponding download file with all the hints.')
+    st.subheader('Upload:')
+    gen_hints = {}
+    uploaded_file = st.file_uploader("Choose a xlsx file", type=['xlsx', 'csv'])
+    if uploaded_file is not None:
+      st.write('Thanks for your question, wait a moment until your hint is generated.')
+    #   save_folder = '/mount/src/automatichintgeneration/tmp/'
+    #   file_name = 'testSet_WebApp.xlsx'
+    #   save_path = Path(save_folder, file_name)
+      parent_path = pathlib.Path(__file__).parent.parent.resolve()
+      st.write(parent_path)           
+      save_path = os.path.join(parent_path, "testSet_WebApp.xlsx")
+      complete_name = os.path.join(save_path, uploaded_file.name)
+      with open(complete_name, mode='wb') as w:
+        w.write(uploaded_file.getvalue())
+        df = pd.read_excel(complete_name, sheet_name='Sheet1')
+        df.to_excel(complete_name)
+      if complete_name.exists():
+        st.success(f'uploaded_file {file_name} is successfully saved!')
+        with st.spinner('Generating ...'):
+            # file_path = "/mount/src/automatichintgeneration/tmp/testSet_WebApp.xlsx"
+            file_path = save_path
+            gen_hints = generate_hints_from_xlsx(file_path)
+        st.write('Generated hints:')
+        # for key, value in gen_hints.items():
+        #     if key == "years":
+        #         for year, hint_type in value.items():
+        #             for k, v in hint_type.items():
+        #                 st.write(v)
+        #     else:
+        #         for pel, hint_type in value.items():
+        #             for per, val in hint_type.items():
+        #                 if isinstance(val, dict):
+        #                     for k, v in val.items():
+        #                         st.write(v)
+        #                     else:
+        #                         st.write(val)
+        # save_folder = '/mount/src/automatichintgeneration/tmp/'
+        # file_name = 'results.xlsx'
+        # download_path = Path(save_folder, file_name)
+        download_path = os.path.join(parent_path, 'results.xlsx')
+
+        df_download = pd.read_excel(download_path, sheet_name='Sheet1')
+
+        # st.dataframe(df_download)
+        # # Create a download button
+        # st.download_button(label="Download XLSX", data=df_download.to_excel, file_name="results.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        # filpat = "/mount/src/automatichintgeneration/tmp/results.xlsx"
+
+        with open(download_path, "rb") as template_file:
+            template_byte = template_file.read()
+
+            st.download_button(label="Click to Download Template File",
+                        data=template_byte,
+                        file_name="template.xlsx",
+                        mime='application/octet-stream')
+
+        st.write(gen_hints)
+
+
 
 if selected == "Home":
     st.title('Automatic Hint Generation using Wikipedia')
