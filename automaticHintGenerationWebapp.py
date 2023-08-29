@@ -11,8 +11,8 @@ from pathlib import Path
 import pandas as pd
 
 with st.sidebar:
-    selected = option_menu("Main Menu", ['Tester1','Tester2', "Home","Uploader file", 'Upload file', 'Year question', 'Person question', 'Location question'],
-        icons=['house', 'house','house', 'upload', 'upload', '123', 'person', 'compass'], menu_icon="cast", default_index=0)
+    selected = option_menu("Main Menu", [ "Home", 'Upload file', 'Year question', 'Person question', 'Location question'],
+        icons=['house', 'upload', '123', 'person', 'compass'], menu_icon="cast", default_index=0)
 
 if selected == "Home":
     st.title('Automatic Hint Generation using Wikipedia')
@@ -26,7 +26,7 @@ elif selected == "Upload file":
     if uploaded_file is not None:
         st.write('Thanks for your question, wait a moment until your hint is generated.')
     #   save_folder = '/mount/src/automatichintgeneration/tmp/'
-    #   file_name = 'testSet_WebApp.xlsx'
+        file_name = 'testSet_WebApp.xlsx'
     #   save_path = Path(save_folder, file_name)
         save_path = os.getcwd()
         test_path = os.path.join(save_path, 'data')
