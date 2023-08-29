@@ -16,6 +16,8 @@ with st.sidebar:
 if selected == "Tester1":
     st.title('Automatic Hint Generation using Wikipedia')
     st.subheader('This WebApp takes a question, answer pair and returns a corresponding hint.')
+    st.write(os.getcwd())
+    st.write(__file__)
 
     uploaded_file = st.file_uploader("Choose a CSV file")
     if uploaded_file is not None:
