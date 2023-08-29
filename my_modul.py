@@ -3,6 +3,9 @@ File that contains the final hint generation functions where all of the one from
 """
 
 imports_path = "/mount/automaticHintGeneration/importsHintGeneration"
+save_path = os.getcwd()
+# test_path = os.path.join(save_path, 'data')
+imports_path = save_path + '/importsHintGeneration'
 import sys
 sys.path.insert(0, imports_path)
 
@@ -93,8 +96,11 @@ def save_as_xlsx_file(year_questions_dict, person_questions_dict, location_quest
   columns_order = ["question", "answer", "category", "hints"]
   df = df[columns_order]
   # Save the DataFrame to an Excel file
-  output_file = "/mount/src/automatichintgeneration/tmp/results.xlsx"
-  df.to_excel(output_file, index=False)
+  save_path = os.getcwd()
+  test_path = os.path.join(save_path, 'data')
+  complete_name = test_path + '/results.xlsx'
+  # output_file = "/mount/src/automatichintgeneration/tmp/results.xlsx"
+  df.to_excel(complete_name, index=False)
 
   return dict_list
 
@@ -149,11 +155,14 @@ def generate_hints_from_xlsx(file_path):
 
 def save_file():
   # Read the Excel file into a DataFrame
-  df = pd.read_excel("/mount/src/automatichintgeneration/tmp/testSet_WebApp.xlsx")
+  save_path = os.getcwd()
+  test_path = os.path.join(save_path, 'data')
+  complete_name = test_path + '/testSet_WebApp.xlsx'
+  df = pd.read_excel(complete_name)
   # Drop the first column by positional index
   df = df.iloc[:, 1:]
   # Write the updated DataFrame back to the Excel file
-  df.to_excel("/mount/src/automatichintgeneration/tmp/testSet_WebApp.xlsx", index=False)
+  df.to_excel(complete_name, index=False)
   return True
 
 def read_properties_from_file(file_path):

@@ -134,7 +134,7 @@ elif selected == "Person question":
     st.header('Enter the person-question with the answer and wait for the corresponding hint to be generated.')
     st.subheader('Input:')
     gen_hints = {}
-    st.write("WTF!")
+    # st.write("WTF!")
     with st.form(key="Form :", clear_on_submit = True):
         Question=st.text_input(label='Please enter your question') #Collect user feedback
         Answer=st.text_input(label='Please enter the corresponding answer') #Collect user feedback
