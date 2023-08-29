@@ -2,7 +2,7 @@
 File that contains the final hint generation functions where all of the one from the functionsHintGeneration file are orchestrated to work together.
 """
 
-imports_path = "/content/automaticHintGeneration/importsHintGeneration"
+imports_path = "/mount/automaticHintGeneration/importsHintGeneration"
 import sys
 sys.path.insert(0, imports_path)
 

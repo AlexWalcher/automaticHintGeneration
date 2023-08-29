@@ -16,7 +16,7 @@ def apt_install(package):
     check_call(['apt-get', 'install', '-y', package], stdout=open(os.devnull,'wb'), stderr=STDOUT)
 
 directory = "tmp" # Directory
-parent_dir = "/content/automaticHintGeneration" # Parent Directory path
+parent_dir = "/mount/src/automaticHintGeneration" # Parent Directory path
 path = os.path.join(parent_dir, directory) # Path
 
 # apt_install('apt-transport-https')
