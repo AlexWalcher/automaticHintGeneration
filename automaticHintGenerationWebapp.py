@@ -14,117 +14,6 @@ with st.sidebar:
     selected = option_menu("Main Menu", ['Tester1','Tester2', "Home","Uploader file", 'Upload file', 'Year question', 'Person question', 'Location question'],
         icons=['house', 'house','house', 'upload', 'upload', '123', 'person', 'compass'], menu_icon="cast", default_index=0)
 
-if selected == "Tester1":
-    st.title('Automatic Hint Generation using Wikipedia')
-    st.subheader('This WebApp takes a question, answer pair and returns a corresponding hint.')
-    st.write(os.getcwd())
-    st.write(__file__)
-    st.write(os.path.abspath(__file__))
-    st.write(os.path.dirname(os.path.abspath(__file__)))
-
-    uploaded_file = st.file_uploader("Choose a CSV file")
-    if uploaded_file is not None:
-        bytes_data = uploaded_file.getvalue()
-        data = uploaded_file.getvalue().decode('utf-8').splitlines()         
-        st.session_state["preview"] = ''
-        for i in range(0, min(5, len(data))):
-            st.session_state["preview"] += data[i]
-    preview = st.text_area("CSV Preview", "", height=150, key="preview")
-    upload_state = st.text_area("Upload State", "", key="upload_state")
-
-    def upload():
-        if uploaded_file is None:
-            st.session_state["upload_state"] = "Upload a file first!"
-        else:
-            data = uploaded_file.getvalue().decode('utf-8')
-            parent_path = pathlib.Path(__file__).parent.parent.resolve()
-            st.write(parent_path)           
-            save_path = os.path.join(parent_path, "data")
-            complete_name = os.path.join(save_path, uploaded_file.name)
-            destination_file = open(complete_name, "w")
-            destination_file.write(data)
-            destination_file.close()
-            st.session_state["upload_state"] = "Saved " + complete_name + " successfully!"
-
-    st.button("Upload file to Sandbox", on_click=upload)
-
-if selected == "Tester2":
-    st.write(os.getcwd())   # /app/automatichintgeneration
-    st.write(__file__)      # /app/automatichintgeneration/automaticHintGenerationWebapp.py
-    st.write(os.path.abspath(__file__)) #/app/automatichintgeneration/automaticHintGenerationWebapp.py
-    st.write(os.path.dirname(os.path.abspath(__file__)))# /app/automatichintgeneration
-    uploaded_file = st.file_uploader("Choose a file")
-
-    if uploaded_file is not None:
-        # To read file as bytes:
-        bytes_data = uploaded_file.getvalue()
-        st.write(bytes_data)
-
-        # To convert to a string based IO:
-        stringio = StringIO(uploaded_file.getvalue().decode("utf-8"))
-        st.write(stringio)
-
-        # To read file as string:
-        string_data = stringio.read()
-        st.write(string_data)
-
-        # Can be used wherever a "file-like" object is accepted:
-        dataframe = pd.read_csv(uploaded_file)
-        st.write(dataframe)
-
-        data = uploaded_file.getvalue().decode('utf-8')
-        parent_path = pathlib.Path(__file__).parent.parent.resolve()
-        st.write(parent_path)           
-        parent_path2 = pathlib.Path(__file__).parent.resolve()
-        st.write(parent_path2) 
-        save_path = os.getcwd()
-        st.write(save_path)           
-        complete_name = os.path.join(save_path, uploaded_file.name)
-        destination_file = open(complete_name, "w")
-        destination_file.write(data)
-        destination_file.close()
-
-        st.write(os.listdir(os.getcwd()))
-
-        
-        test_path = os.path.join(save_path, 'data')
-        test_path2 = test_path + '/testSet_WebApp.xlsx'
-
-        df = pd.read_excel(test_path2, sheet_name='Sheet1')
-        st.write(df)
-
-
-elif selected == "Uploader file":
-    st.header('Enter the years-question with the answer and wait for the corresponding hint to be generated.')
-    st.subheader('Input:')
-    gen_hints = {}
-    with st.form(key="Year_Form :", clear_on_submit = True):
-        Question=st.text_input(label='Please enter your question') #Collect user feedback
-        #Answer=st.number_input(label='Please enter the corresponding answer') #Collect user feedback
-        Answer=st.number_input(label='Please enter the corresponding answer', min_value=0, max_value=2050, value=2022, format="%i") #Collect user feedback
-        year_as_txt = str(Answer)
-        Answer = int(2018)
-        submitted = st.form_submit_button('Submit')
-        if submitted:
-            st.write('Thanks for your question, wait a moment until your hint is generated.')
-            save_path = os.getcwd()
-            test_path = os.path.join(save_path, 'data')
-            st.write(test_path)           
-            # complete_name = os.path.join(test_path, 'questionYear.txt')
-            complete_name = test_path + '/questionYear.txt'
-            st.write(complete_name)           
-
-            open(complete_name, 'w').close()
-            with open(complete_name, 'a') as writefile:
-                item = 'Question: ' + str(Question) + '; ' + 'Answer: ' + year_as_txt
-                writefile.write(item + "\n")
-                writefile.close()
-            with st.spinner('Generating ...'):
-                file_path = complete_name
-                gen_hints = generate_hints_from_txt(file_path)
-            st.write('Generated hints:')
-            st.write(gen_hints)
-
 if selected == "Home":
     st.title('Automatic Hint Generation using Wikipedia')
     st.subheader('This WebApp takes a question, answer pair and returns a corresponding hint.')
@@ -146,7 +35,7 @@ elif selected == "Upload file":
             w.write(uploaded_file.getvalue())
             df = pd.read_excel(complete_name, sheet_name='Sheet1')
             df.to_excel(complete_name)
-        if complete_name.exists():
+        if Path(complete_name).exists():
             st.success(f'uploaded_file {file_name} is successfully saved!')
             with st.spinner('Generating ...'):
                 file_path = complete_name
