@@ -84,13 +84,14 @@ if selected == "Tester2":
         destination_file.write(data)
         destination_file.close()
 
+        st.write(os.listdir(os.getcwd()))
+
         
         test_path = os.path.join(save_path, 'data')
-        test_path2 = test_path + 'testSet_WebApp.xlsx'
+        test_path2 = test_path + '/testSet_WebApp.xlsx'
 
         df = pd.read_excel(test_path2, sheet_name='Sheet1')
         st.write(df)
-        st.write(os.listdir(os.getcwd()))
 
 
 
