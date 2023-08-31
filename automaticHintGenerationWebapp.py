@@ -103,7 +103,11 @@ elif selected == "Year question":
                 file_path = complete_name
                 gen_hints = generate_hints_from_txt(file_path)
             st.write('Generated hints:')
-            st.write(gen_hints)
+            for cat, year in gen_hints.items():
+                for ye, typ in year.items():
+                    for a, b in typ.items():
+                        for sentence, score in b.items():
+                            st.write(sentence)
 
 elif selected == "Location question":
     st.header('Enter the location-question with the answer and wait for the corresponding hint to be generated.')
@@ -128,7 +132,12 @@ elif selected == "Location question":
                 file_path = complete_name
                 gen_hints = generate_hints_from_txt(file_path)
             st.write('Generated hints:')
-            st.write(gen_hints)
+            # st.write(gen_hints)
+            for cat, year in gen_hints.items():
+                for ye, typ in year.items():
+                    for a, b in typ.items():
+                        for sentence, score in b.items():
+                            st.write(sentence)
 
 elif selected == "Person question":
     st.header('Enter the person-question with the answer and wait for the corresponding hint to be generated.')
@@ -155,11 +164,17 @@ elif selected == "Person question":
                 gen_hints = generate_hints_from_txt(file_path)
             st.write('Generated hints:')
             st.write(gen_hints)
+
+            for cat, year in gen_hints.items():
+                for ye, typ in year.items():
+                    for a, b in typ.items():
+                        for sentence, score in b.items():
+                            st.write(sentence)
     
 elif selected == "Example usage":
     st.title('The following list contains examples for a better understanding of how to use the app.')
 
-    st.subheader('For singel <question, answer> pairs')
+    st.subheader('For singel <question, answer> pairs:')
     st.write('Choose the desired type from the Menu on the left: either Year, Person or Location. Then just enter the question with the corresponding answer.' )
     st.write('Example:')
     d = {'Question': [ 'Who is the owner of the renamed social media platform X?'], 'Answer': ['Elon Musk']}

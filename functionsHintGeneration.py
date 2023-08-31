@@ -2733,10 +2733,10 @@ def create_hint_sentences_predicates(properties_person_name_dict, properties_bla
           elif len(entries) == 1: #when we want to list 1 item
             intermediate_str = entries[0]
           properties_sentences_dict[proper] = properties_blank_sentences[proper].replace('0', str(intermediate_str))
-    if 'child' in value:
-      properties_sentences_dict['child'] = properties_blank_sentences['child'].replace('/', str(len(value['child'])))
-    if 'sibling' in value:
-      properties_sentences_dict['sibling'] = properties_blank_sentences['sibling'].replace('/', str(len(value['sibling'])))
+    # if 'child' in value:
+    #   properties_sentences_dict['child'] = properties_blank_sentences['child'].replace('/', str(len(value['child'])))
+    # if 'sibling' in value:
+    #   properties_sentences_dict['sibling'] = properties_blank_sentences['sibling'].replace('/', str(len(value['sibling'])))
     if 'child' in value and 'sibling' in value:
       properties_sentences_dict['child + sibling'] = properties_blank_sentences['child + sibling'].replace('/', str(len(value['child']))).replace('*', str(len(value['sibling'])))
     if 'date of birth' in value and 'place of birth' in value:
