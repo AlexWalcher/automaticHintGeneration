@@ -160,7 +160,7 @@ elif selected == "Location question":
                 st.write(prs_cat)
                 # prs_pred = gen_hints['people']['predicates']
                 for prs, hints in prs_cat.items():
-                  prin_dat.append(hints[0])
+                  prin_dat.append(hints)
                 # for cat, year in gen_hints.items():
                 #     for ye, typ in year.items():
                 #         for a, b in typ.items():
