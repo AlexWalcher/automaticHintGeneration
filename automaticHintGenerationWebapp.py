@@ -103,13 +103,17 @@ elif selected == "Year question":
                 file_path = complete_name
                 gen_hints = generate_hints_from_txt(file_path)
             st.write('Generated hints:')
+            prin_dat = []
             try: 
                 for cat, year in gen_hints.items():
                     for ye, typ in year.items():
                         for a, b in typ.items():
                             for sentence, score in b.items():
                                 for x, y in score.items():
-                                    st.write(x)
+                                    prin_dat.append(x)
+                # st.write(prin_dat)
+                df = pd.DataFrame(data=prin_dat)
+                st.table(df)
             except Exception as e:
                 st.write(gen_hints)
 
@@ -137,13 +141,17 @@ elif selected == "Location question":
                 gen_hints = generate_hints_from_txt(file_path)
             st.write('Generated hints:')
             # st.write(gen_hints)
+            prin_dat = []
             try: 
                 for cat, year in gen_hints.items():
                     for ye, typ in year.items():
                         for a, b in typ.items():
                             for sentence, score in b.items():
                                 for x, y in score.items():
-                                    st.write(x)
+                                    prin_dat.append(x)
+                # st.write(prin_dat)
+                df = pd.DataFrame(data=prin_dat)
+                st.table(df)
             except Exception as e:
                 st.write(gen_hints)
 
@@ -171,12 +179,25 @@ elif selected == "Person question":
                 st.write()
                 gen_hints = generate_hints_from_txt(file_path)
             st.write('Generated hints:')
+            prin_dat = []
             try: 
                 for cat, year in gen_hints.items():
-                    for ye, typ in year.items():
-                        for a, b in typ.items():
-                            for sentence, score in b.items():
-                                st.write(sentence)
+                    if year == 'categories':
+                        for ye, typ in year.items():
+                            for a, b in typ.items():
+                                for sentence, score in b.items():
+                                    # st.write(sentence)
+                                    prin_dat.append(sentence)
+                    elif year == 'predicates':
+                        for ye, typ in year.items():
+                            for a, b in typ.items():
+                                for sentence, score in b.items():
+                                    for x,y in score.items():
+                                        prin_dat.append(x)
+                                        # st.write(x)
+                # st.write(prin_dat)
+                df = pd.DataFrame(data=prin_dat)
+                st.table(df)
             except Exception as e:
                 st.write(gen_hints)
     
