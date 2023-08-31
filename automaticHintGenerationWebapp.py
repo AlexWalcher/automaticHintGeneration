@@ -103,11 +103,15 @@ elif selected == "Year question":
                 file_path = complete_name
                 gen_hints = generate_hints_from_txt(file_path)
             st.write('Generated hints:')
-            for cat, year in gen_hints.items():
-                for ye, typ in year.items():
-                    for a, b in typ.items():
-                        for sentence, score in b.items():
-                            st.write(sentence)
+            try: 
+                for cat, year in gen_hints.items():
+                    for ye, typ in year.items():
+                        for a, b in typ.items():
+                            for sentence, score in b.items():
+                                for x, y in score.items():
+                                    st.write(x)
+            except Exception as e:
+                st.write(gen_hints)
 
 elif selected == "Location question":
     st.header('Enter the location-question with the answer and wait for the corresponding hint to be generated.')
@@ -133,11 +137,15 @@ elif selected == "Location question":
                 gen_hints = generate_hints_from_txt(file_path)
             st.write('Generated hints:')
             # st.write(gen_hints)
-            for cat, year in gen_hints.items():
-                for ye, typ in year.items():
-                    for a, b in typ.items():
-                        for sentence, score in b.items():
-                            st.write(sentence)
+            try: 
+                for cat, year in gen_hints.items():
+                    for ye, typ in year.items():
+                        for a, b in typ.items():
+                            for sentence, score in b.items():
+                                for x, y in score.items():
+                                    st.write(x)
+            except Exception as e:
+                st.write(gen_hints)
 
 elif selected == "Person question":
     st.header('Enter the person-question with the answer and wait for the corresponding hint to be generated.')
@@ -163,13 +171,14 @@ elif selected == "Person question":
                 st.write()
                 gen_hints = generate_hints_from_txt(file_path)
             st.write('Generated hints:')
-            st.write(gen_hints)
-
-            for cat, year in gen_hints.items():
-                for ye, typ in year.items():
-                    for a, b in typ.items():
-                        for sentence, score in b.items():
-                            st.write(sentence)
+            try: 
+                for cat, year in gen_hints.items():
+                    for ye, typ in year.items():
+                        for a, b in typ.items():
+                            for sentence, score in b.items():
+                                st.write(sentence)
+            except Exception as e:
+                st.write(gen_hints)
     
 elif selected == "Example usage":
     st.title('The following list contains examples for a better understanding of how to use the app.')
