@@ -126,6 +126,7 @@ elif selected == "Year question":
                 n = {'Hints': prin_dat}
                 df = pd.DataFrame(data=n)
                 st.table(df)
+                st.write(prin_dat)
             except Exception as e:
                 st.write(gen_hints)
 
@@ -156,7 +157,8 @@ elif selected == "Location question":
             prin_dat = []
             try:
                 prs_cat = gen_hints['locations']['properties'][Answer]
-                prs_pred = gen_hints['people']['predicates']
+                st.write(prs_cat)
+                # prs_pred = gen_hints['people']['predicates']
                 for prs, hints in prs_cat.items():
                   prin_dat.append(hints[0])
                 # for cat, year in gen_hints.items():
@@ -169,6 +171,7 @@ elif selected == "Location question":
                 n = {'Hints': prin_dat}
                 df = pd.DataFrame(data=n)
                 st.table(df)
+                st.write(prin_dat)
             except Exception as e:
                 st.write(gen_hints)
 
