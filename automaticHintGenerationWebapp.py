@@ -105,12 +105,23 @@ elif selected == "Year question":
             st.write('Generated hints:')
             prin_dat = []
             try: 
-                for cat, year in gen_hints.items():
-                    for ye, typ in year.items():
-                        for a, b in typ.items():
-                            for sentence, score in b.items():
-                                for x, y in score.items():
-                                    prin_dat.append(x)
+                year_sport = gen_hints['years'][year_as_txt]['sports']
+                try:
+                    year_vizgr = gen_hints['years'][year_as_txt]['vizgr']
+                    for prs, type in year_vizgr.items():
+                        prin_dat.append(type[0])
+                except Exception as ee:
+                    print(ee)
+                for prs, hints in year_sport.items():
+                  prin_dat.append(hints[0])
+                # for prs, type in year_vizgr.items():
+                #       prin_dat.append(hints[0])
+                # for cat, year in gen_hints.items():
+                #     for ye, typ in year.items():
+                #         for a, b in typ.items():
+                #             for sentence, score in b.items():
+                #                 for x, y in score.items():
+                #                     prin_dat.append(x)
                 # st.write(prin_dat)
                 n = {'Hints': prin_dat}
                 df = pd.DataFrame(data=n)
@@ -143,13 +154,17 @@ elif selected == "Location question":
             st.write('Generated hints:')
             # st.write(gen_hints)
             prin_dat = []
-            try: 
-                for cat, year in gen_hints.items():
-                    for ye, typ in year.items():
-                        for a, b in typ.items():
-                            for sentence, score in b.items():
-                                for x, y in score.items():
-                                    prin_dat.append(x)
+            try:
+                prs_cat = gen_hints['locations']['properties'][Answer]
+                prs_pred = gen_hints['people']['predicates']
+                for prs, hints in prs_cat.items():
+                  prin_dat.append(hints[0])
+                # for cat, year in gen_hints.items():
+                #     for ye, typ in year.items():
+                #         for a, b in typ.items():
+                #             for sentence, score in b.items():
+                #                 for x, y in score.items():
+                #                     prin_dat.append(x)
                 # st.write(prin_dat)
                 n = {'Hints': prin_dat}
                 df = pd.DataFrame(data=n)
@@ -183,20 +198,27 @@ elif selected == "Person question":
             st.write('Generated hints:')
             prin_dat = []
             try: 
-                for cat, year in gen_hints.items():
-                    if year == 'categories':
-                        for ye, typ in year.items():
-                            for a, b in typ.items():
-                                for sentence, score in b.items():
-                                    # st.write(sentence)
-                                    prin_dat.append(sentence)
-                    elif year == 'predicates':
-                        for ye, typ in year.items():
-                            for a, b in typ.items():
-                                for sentence, score in b.items():
-                                    for x,y in score.items():
-                                        prin_dat.append(x)
-                                        # st.write(x)
+                prs_cat = gen_hints['people']['categories']
+                prs_pred = gen_hints['people']['predicates']
+                for prs, hints in prs_cat.items():
+                  prin_dat.append(hints[0])
+                for prs, type in prs_cat.items():
+                  for i, hints in type.items():
+                      prin_dat.append(hints[0])
+                # for cat, year in gen_hints.items():
+                #     if year == 'categories':
+                #         for ye, typ in year.items():
+                #             for a, b in typ.items():
+                #                 for sentence, score in b.items():
+                #                     # st.write(sentence)
+                #                     prin_dat.append(sentence)
+                #     elif year == 'predicates':
+                #         for ye, typ in year.items():
+                #             for a, b in typ.items():
+                #                 for sentence, score in b.items():
+                #                     for x,y in score.items():
+                #                         prin_dat.append(x)
+                #                         # st.write(x)
                 # st.write(prin_dat)
                 n = {'Hints': prin_dat}
                 df = pd.DataFrame(data=n)
