@@ -110,17 +110,16 @@ olympic_sentences = ['In the same year, the Summer Olympics were held in ', 'In 
 #list of interesting properties of people
 list_of_properties = ['nickname', 'country of citizenship', 'name in native language', 'native language', 'height',
                   'occupation', 'field of work', 'educated at', 'residence', 'work period', 'ethnic group',
-                  'notable work', 'member of', 'owner of', 'significant event', 'award received',
+                  'notable work', 'member of', 'owner of', 'significant event', 'award received', 'employer', 'position held', 'owner of', 
                   'date of birth', 'place of birth', 'date of death', 'place of death', 'manner of death',
                   'cause of death', 'social media followers', 'father', 'mother', 'sibling', 'spouse', 'child', 'unmarried partner', 'sport']
 
 properties_blank_sentences = {
-  'child': 'The person you are looking for, has / children.',
-  'sibling': 'The person you are looking for, has / siblings.',
-  'native language': 'The person you are looking for, speaks 0.',
+  'owner of': 'The person you are looking for is/was the owner of: 0.',
+  'employer': 'The person you are looking for is/was an employee at the following companies: 0.',
+  'position held': 'The person you are looking for is holding/has held the following positions as an eployee: 0.',
   'occupation': 'The person you are looking for, is occupied as 0.',
   'award received': 'The person you are looking for has won multiple awards in his life, some of them are 0.',
-  'ethnic group': 'The person you are looking for was/is a member of the follwoing ethnic group: 0.',
   'nickname': 'The person you are looking for was/is also known under the follwoing nickname: 0.',
   'significant event': 'Some of the most significant events of the searched person were: 0',
   'notable work': 'The person you are looking for was involved in some very notable works, like: 0.',

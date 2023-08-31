@@ -11,8 +11,8 @@ from pathlib import Path
 import pandas as pd
 
 with st.sidebar:
-    selected = option_menu("Main Menu", [ "Home", 'Upload file', 'Year question', 'Person question', 'Location question'],
-        icons=['house', 'upload', '123', 'person', 'compass'], menu_icon="cast", default_index=0)
+    selected = option_menu("Main Menu", [ "Home", 'Upload file', 'Year question', 'Person question', 'Location question', 'Example usage'],
+        icons=['house', 'upload', '123', 'person', 'compass', 'gear'], menu_icon="cast", default_index=0)
 
 if selected == "Home":
     st.title('Automatic Hint Generation using Wikipedia')
@@ -155,3 +155,36 @@ elif selected == "Person question":
                 gen_hints = generate_hints_from_txt(file_path)
             st.write('Generated hints:')
             st.write(gen_hints)
+    
+elif selected == "Example usage":
+    st.title('The following list contains examples for a better understanding of how to use the app.')
+
+    st.subheader('For singel <question, answer> pairs')
+    st.write('Choose the desired type from the Menu on the left: either Year, Person or Location. Then just enter the question with the corresponding answer.' )
+    st.write('Example:')
+    d = {'Question': [ 'Who is the owner of the renamed social media platform X?'], 'Answer': ['Elon Musk']}
+    df = pd.DataFrame(data=d)
+    st.table(df)
+    st.write('Hints: ')
+    d = {'Hints': [
+        'The person you are looking for has won multiple awards in his life, some of them are Honorary degree, honorary doctorate and Fellow of the Royal Society.', 
+        'The person you are looking for is/was an employee at the following companies: PayPal, SpaceX and Tesla, Inc..',
+        'The person you are looking for, is occupied as programmer, engineer and entrepreneur.',
+        "The person you are looking for is/was the owner of: Tesla, Inc., X.com and Elon Musk's Tesla Roadster.",
+        'The person you are looking for is holding/has held the following positions as an eployee: chief executive officer, chief technology officer and chairperson.',
+        'The person you are looking for, has 3 children and 3 siblings.',
+        'The person you are looking for was born on 28.06.1971 in Pretoria.']}
+    df = pd.DataFrame(data=d)
+    st.table(df)
+
+
+    st.subheader('For multiple <question, answer> pairs:')
+    st.write('Choose the Upload file page from the Menu on the left.' )
+    st.write('The uploaded file should be a Excel (xlsx) file and must contain a Question, Answer and Category cell in the first row of the file.' )
+    st.write('Example file:')
+
+    d = {'Question': [ 'Who was the 2022 F1 World Drivers champion?', 'What year was last year?', 'What is the capital of Austria?'], 'Answer': ['Max Verstappen', 2022, 'Vienna'], 'Category': ['person', 'year', 'location']}
+    df = pd.DataFrame(data=d)
+    st.table(df)
+
+    st.write('After the calculation, the hints can be downloaded as a Excel file and are printed on the webpage as well.')
