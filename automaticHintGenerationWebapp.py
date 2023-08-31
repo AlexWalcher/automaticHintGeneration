@@ -84,7 +84,7 @@ elif selected == "Year question":
         #Answer=st.number_input(label='Please enter the corresponding answer') #Collect user feedback
         Answer=st.number_input(label='Please enter the corresponding answer', min_value=0, max_value=2050, value=2022, format="%i") #Collect user feedback
         year_as_txt = str(Answer)
-        Answer = int(2018)
+        Answer = int(year_as_txt)
         submitted = st.form_submit_button('Submit')
         if submitted:
             st.write('Thanks for your question, wait a moment until your hint is generated.')
@@ -105,18 +105,18 @@ elif selected == "Year question":
             st.write('Generated hints:')
             prin_dat = []
             try: 
-                year_sport = gen_hints['years'][year_as_txt]['sports']
+                year_sport = gen_hints['years'][Answer]['sports']
                 st.write(year_sport)
                 try:
-                    year_vizgr = gen_hints['years'][year_as_txt]['vizgr']
+                    year_vizgr = gen_hints['years'][Answer]['vizgr']
                     for prs, type in year_vizgr.items():
-                        for x,y in type.items():
+                        for x,y in type:
                             prin_dat.append(x)
                         # prin_dat.append(type[0])
                 except Exception as ee:
                     print(ee)
                 for prs, hints in year_sport.items():
-                    for x,y in hints.items():
+                    for x,y in hints:
                         prin_dat.append(x)
                 #   prin_dat.append(hints[0])
                 # for prs, type in year_vizgr.items():
@@ -213,11 +213,12 @@ elif selected == "Person question":
                 
                 for prs, hints in prs_cat.items():
                     # prin_dat.append(hints[0])
-                    for x,y in hints.items():
+                    for x,y in hints:
                         prin_dat.append(x)
-                for prs, type in prs_cat.items():
-                  for i, hints in type.items():
-                      prin_dat.append(hints)
+                for prs, type in prs_pred.items():
+                    for i, hints in type.items():
+                        for l,m in hints:
+                            prin_dat.append(l)
                 # for cat, year in gen_hints.items():
                 #     if year == 'categories':
                 #         for ye, typ in year.items():
