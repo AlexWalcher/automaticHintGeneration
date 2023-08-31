@@ -106,6 +106,7 @@ elif selected == "Year question":
             prin_dat = []
             try: 
                 year_sport = gen_hints['years'][year_as_txt]['sports']
+                st.write(year_sport)
                 try:
                     year_vizgr = gen_hints['years'][year_as_txt]['vizgr']
                     for prs, type in year_vizgr.items():
@@ -209,13 +210,14 @@ elif selected == "Person question":
             try: 
                 prs_cat = gen_hints['people']['categories']
                 prs_pred = gen_hints['people']['predicates']
-                st.write(prs_cat)
-                st.write(prs_pred)
+                
                 for prs, hints in prs_cat.items():
-                  prin_dat.append(hints[0])
+                    # prin_dat.append(hints[0])
+                    for x,y in hints.items():
+                        prin_dat.append(x)
                 for prs, type in prs_cat.items():
                   for i, hints in type.items():
-                      prin_dat.append(hints[0])
+                      prin_dat.append(hints)
                 # for cat, year in gen_hints.items():
                 #     if year == 'categories':
                 #         for ye, typ in year.items():
@@ -234,6 +236,8 @@ elif selected == "Person question":
                 n = {'Hints': prin_dat}
                 df = pd.DataFrame(data=n)
                 st.table(df)
+                st.write(prs_cat)
+                st.write(prs_pred)
             except Exception as e:
                 st.write(gen_hints)
     
