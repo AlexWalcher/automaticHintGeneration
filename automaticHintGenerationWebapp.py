@@ -112,7 +112,8 @@ elif selected == "Year question":
                                 for x, y in score.items():
                                     prin_dat.append(x)
                 # st.write(prin_dat)
-                df = pd.DataFrame(data=prin_dat)
+                n = {'Hints': prin_dat}
+                df = pd.DataFrame(data=n)
                 st.table(df)
             except Exception as e:
                 st.write(gen_hints)
@@ -150,7 +151,8 @@ elif selected == "Location question":
                                 for x, y in score.items():
                                     prin_dat.append(x)
                 # st.write(prin_dat)
-                df = pd.DataFrame(data=prin_dat)
+                n = {'Hints': prin_dat}
+                df = pd.DataFrame(data=n)
                 st.table(df)
             except Exception as e:
                 st.write(gen_hints)
@@ -196,7 +198,8 @@ elif selected == "Person question":
                                         prin_dat.append(x)
                                         # st.write(x)
                 # st.write(prin_dat)
-                df = pd.DataFrame(data=prin_dat)
+                n = {'Hints': prin_dat}
+                df = pd.DataFrame(data=n)
                 st.table(df)
             except Exception as e:
                 st.write(gen_hints)
