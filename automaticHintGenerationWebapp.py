@@ -109,11 +109,15 @@ elif selected == "Year question":
                 try:
                     year_vizgr = gen_hints['years'][year_as_txt]['vizgr']
                     for prs, type in year_vizgr.items():
-                        prin_dat.append(type[0])
+                        for x,y in type.items():
+                            prin_dat.append(x)
+                        # prin_dat.append(type[0])
                 except Exception as ee:
                     print(ee)
                 for prs, hints in year_sport.items():
-                  prin_dat.append(hints[0])
+                    for x,y in hints.items():
+                        prin_dat.append(x)
+                #   prin_dat.append(hints[0])
                 # for prs, type in year_vizgr.items():
                 #       prin_dat.append(hints[0])
                 # for cat, year in gen_hints.items():
@@ -157,10 +161,12 @@ elif selected == "Location question":
             prin_dat = []
             try:
                 prs_cat = gen_hints['locations']['properties'][Answer]
-                st.write(prs_cat)
+                # st.write(prs_cat)
                 # prs_pred = gen_hints['people']['predicates']
                 for prs, hints in prs_cat.items():
-                  prin_dat.append(hints)
+                    if prs != 'question':
+                        for x,y in hints.items():
+                            prin_dat.append(x)
                 # for cat, year in gen_hints.items():
                 #     for ye, typ in year.items():
                 #         for a, b in typ.items():
@@ -171,7 +177,7 @@ elif selected == "Location question":
                 n = {'Hints': prin_dat}
                 df = pd.DataFrame(data=n)
                 st.table(df)
-                st.write(prin_dat)
+                # st.write(prin_dat)
             except Exception as e:
                 st.write(gen_hints)
 
@@ -203,6 +209,8 @@ elif selected == "Person question":
             try: 
                 prs_cat = gen_hints['people']['categories']
                 prs_pred = gen_hints['people']['predicates']
+                st.write(prs_cat)
+                st.write(prs_pred)
                 for prs, hints in prs_cat.items():
                   prin_dat.append(hints[0])
                 for prs, type in prs_cat.items():
