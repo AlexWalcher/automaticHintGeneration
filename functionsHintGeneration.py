@@ -1055,8 +1055,8 @@ def get_location_hints_fixed_properties(location_answers_dict):
             # sim_score = get_similarity_score(question,sentence)
             sim_score = calculate_similarity(question,answer,sentence,sim_score_priority_words)
             inter[code]  = {sentence : sim_score}
-    ret[key] = inter
-    ret[key]['question'] = question    
+        ret[key] = inter
+        ret[key]['question'] = question    
   return ret
 
 #people
