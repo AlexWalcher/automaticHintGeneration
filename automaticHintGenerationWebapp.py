@@ -109,7 +109,7 @@ elif selected == "Year question":
             st.write(year_sport)
             for prs, hints in year_sport.items():
                 st.write(hints)
-                for x,y in hints:
+                for x,y in hints.items():
                     prin_dat.append(x)
             st.write(prin_dat)
             try:
@@ -118,7 +118,7 @@ elif selected == "Year question":
                 for prs, typ in year_vizgr.items():
                     st.write(typ)
 
-                    for x,y in typ:
+                    for x,y in typ.items():
                         prin_dat.append(x)
                     # prin_dat.append(type[0])
             except Exception as ee:
