@@ -108,14 +108,17 @@ elif selected == "Year question":
             year_sport = gen_hints['years'][Answer]['sports']
             st.write(year_sport)
             for prs, hints in year_sport.items():
+                st.write(hints)
                 for x,y in hints:
                     prin_dat.append(x)
             st.write(prin_dat)
             try:
                 year_vizgr = gen_hints['years'][Answer]['vizgr']
                 st.write(year_vizgr)
-                for prs, type in year_vizgr.items():
-                    for x,y in type:
+                for prs, typ in year_vizgr.items():
+                    st.write(typ)
+
+                    for x,y in typ:
                         prin_dat.append(x)
                     # prin_dat.append(type[0])
             except Exception as ee:
