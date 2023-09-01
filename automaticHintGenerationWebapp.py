@@ -41,28 +41,12 @@ elif selected == "Upload file":
                 file_path = complete_name
                 gen_hints = generate_hints_from_xlsx(file_path)
             st.write('Generated hints:')
-        # for key, value in gen_hints.items():
-        #     if key == "years":
-        #         for year, hint_type in value.items():
-        #             for k, v in hint_type.items():
-        #                 st.write(v)
-        #     else:
-        #         for pel, hint_type in value.items():
-        #             for per, val in hint_type.items():
-        #                 if isinstance(val, dict):
-        #                     for k, v in val.items():
-        #                         st.write(v)
-        #                     else:
-        #                         st.write(val)
-        # save_folder = test_path
+
         file_name = '/results.xlsx'
         # download_path = Path(save_folder, file_name)
         download_path = test_path + file_name
         df_download = pd.read_excel(download_path, sheet_name='Sheet1')
 
-        # st.dataframe(df_download)
-        # # Create a download button
-        # st.download_button(label="Download XLSX", data=df_download.to_excel, file_name="results.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
         filpat = download_path
 
         with open(filpat, "rb") as template_file:
@@ -72,8 +56,11 @@ elif selected == "Upload file":
                         data=template_byte,
                         file_name="template.xlsx",
                         mime='application/octet-stream')
-
-        st.write(gen_hints)
+            
+        # n = {'Hints': prin_dat}
+        df = pd.DataFrame(data=gen_hints)
+        st.table(df)
+        # st.write(gen_hints)
 
 
 elif selected == "Year question":
@@ -82,7 +69,6 @@ elif selected == "Year question":
     gen_hints = {}
     with st.form(key="Year_Form :", clear_on_submit = True):
         Question=st.text_input(label='Please enter your question') #Collect user feedback
-        #Answer=st.number_input(label='Please enter the corresponding answer') #Collect user feedback
         Answer=st.number_input(label='Please enter the corresponding answer', min_value=0, max_value=2050, value=2022, format="%i") #Collect user feedback
         year_as_txt = str(Answer)
         Answer = int(year_as_txt)
@@ -91,10 +77,7 @@ elif selected == "Year question":
             st.write('Thanks for your question, wait a moment until your hint is generated.')
             save_path = os.getcwd()
             test_path = os.path.join(save_path, 'data')
-            complete_name = test_path + '/questionYear.txt'
-            # st.write(test_path)           
-            # complete_name = os.path.join(test_path, 'questionYear.txt')
-            # st.write(complete_name)           
+            complete_name = test_path + '/questionYear.txt'      
             open(complete_name, 'w').close()
             with open(complete_name, 'a') as writefile:
                 item = 'Question: ' + str(Question) + '; ' + 'Answer: ' + year_as_txt
@@ -105,42 +88,21 @@ elif selected == "Year question":
                 gen_hints = generate_hints_from_txt(file_path)
             st.write('Generated hints:')
             prin_dat = []
-            # try: 
             year_sport = gen_hints['years'][Answer]['sports']
-            # st.write(year_sport)
             for prs, hints in year_sport.items():
-                # st.write(hints)
                 for x,y in hints.items():
                     prin_dat.append(x)
-            # st.write(prin_dat)
             try:
                 year_vizgr = gen_hints['years'][Answer]['vizgr']
-                # st.write(year_vizgr)
                 for prs, typ in year_vizgr.items():
-                    # st.write(typ)
-
                     for x,y in typ.items():
                         prin_dat.append(x)
-                    # prin_dat.append(type[0])
             except Exception as ee:
                 print(ee)
-            # st.write(prin_dat)
-            #   prin_dat.append(hints[0])
-            # for prs, type in year_vizgr.items():
-            #       prin_dat.append(hints[0])
-            # for cat, year in gen_hints.items():
-            #     for ye, typ in year.items():
-            #         for a, b in typ.items():
-            #             for sentence, score in b.items():
-            #                 for x, y in score.items():
-            #                     prin_dat.append(x)
-            # st.write(prin_dat)
             n = {'Hints': prin_dat}
             df = pd.DataFrame(data=n)
             st.table(df)
-            # st.write(prin_dat)
-        # except Exception as e:
-            # st.write(gen_hints)
+
 
 elif selected == "Location question":
     st.header('Enter the location-question with the answer and wait for the corresponding hint to be generated.')
@@ -165,27 +127,17 @@ elif selected == "Location question":
                 file_path = complete_name
                 gen_hints = generate_hints_from_txt(file_path)
             st.write('Generated hints:')
-            # st.write(gen_hints)
             prin_dat = []
             try:
                 prs_cat = gen_hints['locations']['properties'][Answer]
-                # st.write(prs_cat)
-                # prs_pred = gen_hints['people']['predicates']
                 for prs, hints in prs_cat.items():
                     if prs != 'question':
                         for x,y in hints.items():
                             prin_dat.append(x)
-                # for cat, year in gen_hints.items():
-                #     for ye, typ in year.items():
-                #         for a, b in typ.items():
-                #             for sentence, score in b.items():
-                #                 for x, y in score.items():
-                #                     prin_dat.append(x)
-                # st.write(prin_dat)
+
                 n = {'Hints': prin_dat}
                 df = pd.DataFrame(data=n)
                 st.table(df)
-                # st.write(prin_dat)
             except Exception as e:
                 st.write(gen_hints)
 
@@ -220,7 +172,6 @@ elif selected == "Person question":
                 
                 for prs, hints in prs_cat.items():
                     st.write(hints)
-                    # prin_dat.append(hints[0])
                     for x,y in hints:
                         st.write(x)
                         prin_dat.append(x)
@@ -230,26 +181,10 @@ elif selected == "Person question":
                         for l,m in hint:
                             st.write(l)
                             prin_dat.append(l)
-                # for cat, year in gen_hints.items():
-                #     if year == 'categories':
-                #         for ye, typ in year.items():
-                #             for a, b in typ.items():
-                #                 for sentence, score in b.items():
-                #                     # st.write(sentence)
-                #                     prin_dat.append(sentence)
-                #     elif year == 'predicates':
-                #         for ye, typ in year.items():
-                #             for a, b in typ.items():
-                #                 for sentence, score in b.items():
-                #                     for x,y in score.items():
-                #                         prin_dat.append(x)
-                #                         # st.write(x)
                 st.write(prin_dat)
                 n = {'Hints': prin_dat}
                 df = pd.DataFrame(data=n)
                 st.table(df)
-                # st.write(prs_cat)
-                # st.write(prs_pred)
             except Exception as e:
                 st.write(gen_hints)
     
