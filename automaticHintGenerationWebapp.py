@@ -166,29 +166,31 @@ elif selected == "Person question":
                 gen_hints = generate_hints_from_txt(file_path)
             st.write('Generated hints:')
             prin_dat = []
-            try: 
-                prs_cat = gen_hints['people']['categories']
-                prs_pred = gen_hints['people']['predicates']
-                
-                for prs, hints in prs_cat.items():
-                    st.write(hints)
-                    st.write(hints[0])
-                    for x,y in hints.items():
-                        st.write(x)
-                        prin_dat.append(x)
+            df = pd.DataFrame(data=gen_hints)
+            st.table(df)
+            # try: 
+            prs_cat = gen_hints['people']['categories']
+            prs_pred = gen_hints['people']['predicates']
+            
+            for prs, hints in prs_cat.items():
+                st.write(hints)
+                st.write(hints[0])
+                for x,y in hints.items():
+                    st.write(x)
+                    prin_dat.append(x)
 
-                for prs, typ in prs_pred.items():
-                    for i, hint in typ.items():
-                        st.write(hint)
-                        for l,m in hint.items():
-                            st.write(l)
-                            prin_dat.append(l)
-                st.write(prin_dat)
-                n = {'Hints': prin_dat}
-                df = pd.DataFrame(data=n)
-                st.table(df)
-            except Exception as e:
-                st.write(gen_hints)
+            for prs, typ in prs_pred.items():
+                for i, hint in typ.items():
+                    st.write(hint)
+                    for l,m in hint.items():
+                        st.write(l)
+                        prin_dat.append(l)
+            st.write(prin_dat)
+            n = {'Hints': prin_dat}
+            df = pd.DataFrame(data=n)
+            st.table(df)
+        # except Exception as e:
+            st.write(gen_hints)
     
 elif selected == "Example usage":
     st.title('The following list contains examples for a better understanding of how to use the app.')
