@@ -174,7 +174,7 @@ elif selected == "Person question":
             
             for prs, hints in prs_cat.items():
                 st.write(hints)
-                st.write(hints[0])
+                # st.write(hints[0])
                 for x,y in hints.items():
                     st.write(x)
                     prin_dat.append(x)
