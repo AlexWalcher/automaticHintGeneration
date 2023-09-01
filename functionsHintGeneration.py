@@ -894,8 +894,11 @@ def get_property_data(location_data, property_code):
     # Retrieve the property values
     property_values = location_data["claims"][property_code]
     # Extract the values from the property data
-    values = [value["mainsnak"]["datavalue"]["value"] for value in property_values]
-    return values
+    try:
+      values = [value["mainsnak"]["datavalue"]["value"] for value in property_values]
+      return values
+    except Exception as e:
+      print('get_property_data',e)
   return []
 
 def get_entity_name(entity_id):
