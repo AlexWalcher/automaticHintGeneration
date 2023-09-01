@@ -894,8 +894,11 @@ def get_property_data(location_data, property_code):
     # Retrieve the property values
     property_values = location_data["claims"][property_code]
     # Extract the values from the property data
-    values = [value["mainsnak"]["datavalue"]["value"] for value in property_values]
-    return values
+    try:
+      values = [value["mainsnak"]["datavalue"]["value"] for value in property_values]
+      return values
+    except Exception as e:
+      print('get_property_data',e)
   return []
 
 def get_entity_name(entity_id):
@@ -1052,8 +1055,8 @@ def get_location_hints_fixed_properties(location_answers_dict):
             # sim_score = get_similarity_score(question,sentence)
             sim_score = calculate_similarity(question,answer,sentence,sim_score_priority_words)
             inter[code]  = {sentence : sim_score}
-    ret[key] = inter
-    ret[key]['question'] = question    
+        ret[key] = inter
+        ret[key]['question'] = question    
   return ret
 
 #people
