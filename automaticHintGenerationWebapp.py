@@ -104,36 +104,39 @@ elif selected == "Year question":
                 gen_hints = generate_hints_from_txt(file_path)
             st.write('Generated hints:')
             prin_dat = []
-            try: 
-                year_sport = gen_hints['years'][Answer]['sports']
-                st.write(year_sport)
-                try:
-                    year_vizgr = gen_hints['years'][Answer]['vizgr']
-                    for prs, type in year_vizgr.items():
-                        for x,y in type:
-                            prin_dat.append(x)
-                        # prin_dat.append(type[0])
-                except Exception as ee:
-                    print(ee)
-                for prs, hints in year_sport.items():
-                    for x,y in hints:
+            # try: 
+            year_sport = gen_hints['years'][Answer]['sports']
+            st.write(year_sport)
+            for prs, hints in year_sport.items():
+                for x,y in hints:
+                    prin_dat.append(x)
+            st.write(prin_dat)
+            try:
+                year_vizgr = gen_hints['years'][Answer]['vizgr']
+                st.write(year_vizgr)
+                for prs, type in year_vizgr.items():
+                    for x,y in type:
                         prin_dat.append(x)
-                #   prin_dat.append(hints[0])
-                # for prs, type in year_vizgr.items():
-                #       prin_dat.append(hints[0])
-                # for cat, year in gen_hints.items():
-                #     for ye, typ in year.items():
-                #         for a, b in typ.items():
-                #             for sentence, score in b.items():
-                #                 for x, y in score.items():
-                #                     prin_dat.append(x)
-                # st.write(prin_dat)
-                n = {'Hints': prin_dat}
-                df = pd.DataFrame(data=n)
-                st.table(df)
-                st.write(prin_dat)
-            except Exception as e:
-                st.write(gen_hints)
+                    # prin_dat.append(type[0])
+            except Exception as ee:
+                print(ee)
+            st.write(prin_dat)
+            #   prin_dat.append(hints[0])
+            # for prs, type in year_vizgr.items():
+            #       prin_dat.append(hints[0])
+            # for cat, year in gen_hints.items():
+            #     for ye, typ in year.items():
+            #         for a, b in typ.items():
+            #             for sentence, score in b.items():
+            #                 for x, y in score.items():
+            #                     prin_dat.append(x)
+            # st.write(prin_dat)
+            n = {'Hints': prin_dat}
+            df = pd.DataFrame(data=n)
+            st.table(df)
+            st.write(prin_dat)
+        # except Exception as e:
+            st.write(gen_hints)
 
 elif selected == "Location question":
     st.header('Enter the location-question with the answer and wait for the corresponding hint to be generated.')
