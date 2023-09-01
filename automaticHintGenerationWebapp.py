@@ -221,12 +221,14 @@ elif selected == "Person question":
                 for prs, hints in prs_cat.items():
                     st.write(hints)
                     # prin_dat.append(hints[0])
-                    for x,y in hints.items():
+                    for x,y in hints:
+                        st.write(x)
                         prin_dat.append(x)
                 for prs, type in prs_pred.items():
                     for i, hint in type.items():
                         st.write(hint)
-                        for l,m in hint.items():
+                        for l,m in hint:
+                            st.write(l)
                             prin_dat.append(l)
                 # for cat, year in gen_hints.items():
                 #     if year == 'categories':
@@ -242,7 +244,7 @@ elif selected == "Person question":
                 #                     for x,y in score.items():
                 #                         prin_dat.append(x)
                 #                         # st.write(x)
-                # st.write(prin_dat)
+                st.write(prin_dat)
                 n = {'Hints': prin_dat}
                 df = pd.DataFrame(data=n)
                 st.table(df)
