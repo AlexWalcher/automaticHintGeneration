@@ -75,6 +75,7 @@ elif selected == "Upload file":
 
         st.write(gen_hints)
 
+
 elif selected == "Year question":
     st.header('Enter the years-question with the answer and wait for the corresponding hint to be generated.')
     st.subheader('Input:')
@@ -106,24 +107,24 @@ elif selected == "Year question":
             prin_dat = []
             # try: 
             year_sport = gen_hints['years'][Answer]['sports']
-            st.write(year_sport)
+            # st.write(year_sport)
             for prs, hints in year_sport.items():
-                st.write(hints)
+                # st.write(hints)
                 for x,y in hints.items():
                     prin_dat.append(x)
-            st.write(prin_dat)
+            # st.write(prin_dat)
             try:
                 year_vizgr = gen_hints['years'][Answer]['vizgr']
-                st.write(year_vizgr)
+                # st.write(year_vizgr)
                 for prs, typ in year_vizgr.items():
-                    st.write(typ)
+                    # st.write(typ)
 
                     for x,y in typ.items():
                         prin_dat.append(x)
                     # prin_dat.append(type[0])
             except Exception as ee:
                 print(ee)
-            st.write(prin_dat)
+            # st.write(prin_dat)
             #   prin_dat.append(hints[0])
             # for prs, type in year_vizgr.items():
             #       prin_dat.append(hints[0])
@@ -137,9 +138,9 @@ elif selected == "Year question":
             n = {'Hints': prin_dat}
             df = pd.DataFrame(data=n)
             st.table(df)
-            st.write(prin_dat)
+            # st.write(prin_dat)
         # except Exception as e:
-            st.write(gen_hints)
+            # st.write(gen_hints)
 
 elif selected == "Location question":
     st.header('Enter the location-question with the answer and wait for the corresponding hint to be generated.')
@@ -218,12 +219,14 @@ elif selected == "Person question":
                 prs_pred = gen_hints['people']['predicates']
                 
                 for prs, hints in prs_cat.items():
+                    st.write(hints)
                     # prin_dat.append(hints[0])
-                    for x,y in hints:
+                    for x,y in hints.items():
                         prin_dat.append(x)
                 for prs, type in prs_pred.items():
-                    for i, hints in type.items():
-                        for l,m in hints:
+                    for i, hint in type.items():
+                        st.write(hint)
+                        for l,m in hint.items():
                             prin_dat.append(l)
                 # for cat, year in gen_hints.items():
                 #     if year == 'categories':
@@ -243,8 +246,8 @@ elif selected == "Person question":
                 n = {'Hints': prin_dat}
                 df = pd.DataFrame(data=n)
                 st.table(df)
-                st.write(prs_cat)
-                st.write(prs_pred)
+                # st.write(prs_cat)
+                # st.write(prs_pred)
             except Exception as e:
                 st.write(gen_hints)
     
