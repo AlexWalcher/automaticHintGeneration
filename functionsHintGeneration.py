@@ -110,17 +110,16 @@ olympic_sentences = ['In the same year, the Summer Olympics were held in ', 'In 
 #list of interesting properties of people
 list_of_properties = ['nickname', 'country of citizenship', 'name in native language', 'native language', 'height',
                   'occupation', 'field of work', 'educated at', 'residence', 'work period', 'ethnic group',
-                  'notable work', 'member of', 'owner of', 'significant event', 'award received',
+                  'notable work', 'member of', 'owner of', 'significant event', 'award received', 'employer', 'position held', 'owner of', 
                   'date of birth', 'place of birth', 'date of death', 'place of death', 'manner of death',
                   'cause of death', 'social media followers', 'father', 'mother', 'sibling', 'spouse', 'child', 'unmarried partner', 'sport']
 
 properties_blank_sentences = {
-  'child': 'The person you are looking for, has / children.',
-  'sibling': 'The person you are looking for, has / siblings.',
-  'native language': 'The person you are looking for, speaks 0.',
+  'owner of': 'The person you are looking for is/was the owner of: 0.',
+  'employer': 'The person you are looking for is/was an employee at the following companies: 0.',
+  'position held': 'The person you are looking for is holding/has held the following positions as an eployee: 0.',
   'occupation': 'The person you are looking for, is occupied as 0.',
   'award received': 'The person you are looking for has won multiple awards in his life, some of them are 0.',
-  'ethnic group': 'The person you are looking for was/is a member of the follwoing ethnic group: 0.',
   'nickname': 'The person you are looking for was/is also known under the follwoing nickname: 0.',
   'significant event': 'Some of the most significant events of the searched person were: 0',
   'notable work': 'The person you are looking for was involved in some very notable works, like: 0.',
@@ -2721,30 +2720,33 @@ def create_hint_sentences_predicates(properties_person_name_dict, properties_bla
     ques[answer] = question
   hint_sentence_dict = {}
   for pers_name, value in properties_person_name_dict.items():
+    print(pers_name, value)
     properties_sentences_dict = {}
-    for proper, entries in value.items():
-      if proper in properties_blank_sentences:
-        if type(entries) != dict:
-          if len(entries) >= 3: #when we want to list 3 items
-            first_two = entries[:2]
-            intermediate_str = ', '.join(first_two)
-            intermediate_str = intermediate_str + ' and '+ str(entries[2])
-          elif len(entries) == 2: #when we want to list 2 items
-            intermediate_str = str(entries[0]) + ' and '+ str(entries[1])
-          elif len(entries) == 1: #when we want to list 1 item
-            intermediate_str = entries[0]
-          properties_sentences_dict[proper] = properties_blank_sentences[proper].replace('0', str(intermediate_str))
-    if 'child' in value:
-      properties_sentences_dict['child'] = properties_blank_sentences['child'].replace('/', str(len(value['child'])))
-    if 'sibling' in value:
-      properties_sentences_dict['sibling'] = properties_blank_sentences['sibling'].replace('/', str(len(value['sibling'])))
-    if 'child' in value and 'sibling' in value:
-      properties_sentences_dict['child + sibling'] = properties_blank_sentences['child + sibling'].replace('/', str(len(value['child']))).replace('*', str(len(value['sibling'])))
-    if 'date of birth' in value and 'place of birth' in value:
-      properties_sentences_dict['date of birth + place of birth'] = properties_blank_sentences['date of birth + place of birth'].replace('/', str(value['date of birth'][0])).replace('*', str(value['place of birth'][0]))
-    if 'date of birth' in value and 'place of birth' in value and 'date of death' in value and 'place of death' in value:
-      properties_sentences_dict['date of birth + place of birth + date of death + place of death'] = properties_blank_sentences['date of birth + place of birth + date of death + place of death'].replace('/', str(value['date of birth'][0])).replace('*', str(value['place of birth'][0])).replace('-', str(value['date of death'][0])).replace('+', str(value['place of death'][0]))
-    
+    try:
+      for proper, entries in value.items():
+        if proper in properties_blank_sentences:
+          if type(entries) != dict:
+            if len(entries) >= 3: #when we want to list 3 items
+              first_two = entries[:2]
+              intermediate_str = ', '.join(first_two)
+              intermediate_str = intermediate_str + ' and '+ str(entries[2])
+            elif len(entries) == 2: #when we want to list 2 items
+              intermediate_str = str(entries[0]) + ' and '+ str(entries[1])
+            elif len(entries) == 1: #when we want to list 1 item
+              intermediate_str = entries[0]
+            properties_sentences_dict[proper] = properties_blank_sentences[proper].replace('0', str(intermediate_str))
+      # if 'child' in value:
+      #   properties_sentences_dict['child'] = properties_blank_sentences['child'].replace('/', str(len(value['child'])))
+      # if 'sibling' in value:
+      #   properties_sentences_dict['sibling'] = properties_blank_sentences['sibling'].replace('/', str(len(value['sibling'])))
+      if 'child' in value and 'sibling' in value:
+        properties_sentences_dict['child + sibling'] = properties_blank_sentences['child + sibling'].replace('/', str(len(value['child']))).replace('*', str(len(value['sibling'])))
+      if 'date of birth' in value and 'place of birth' in value:
+        properties_sentences_dict['date of birth + place of birth'] = properties_blank_sentences['date of birth + place of birth'].replace('/', str(value['date of birth'][0])).replace('*', str(value['place of birth'][0]))
+      if 'date of birth' in value and 'place of birth' in value and 'date of death' in value and 'place of death' in value:
+        properties_sentences_dict['date of birth + place of birth + date of death + place of death'] = properties_blank_sentences['date of birth + place of birth + date of death + place of death'].replace('/', str(value['date of birth'][0])).replace('*', str(value['place of birth'][0])).replace('-', str(value['date of death'][0])).replace('+', str(value['place of death'][0]))
+    except Exception as e:
+      print(e)
     inter = {}
     for k,v in properties_sentences_dict.items():
       if '*' not in v:
@@ -3404,6 +3406,7 @@ def popular_sports_per_year(years_list):
   for index in years_list:
     year = int(index)
     year_s = str(year)
+    print(year, year_s)
     year_dict = {
         'cl': '', 'p_cl': '', 'f_cl': '',
         'euros': '', 'p_euros': '', 'f_euros': '',
@@ -3413,95 +3416,115 @@ def popular_sports_per_year(years_list):
         'winter': '', 'p_winter': '', 'f_winter': ''
     }
   # UEFA Champions League: Create the sentences like (In the same-, the following-, the previous-year)
-    for key in cl_all:
-      if int(key.split('/')[1]) == year % 100:
-        result = cl_all[key]
-        break
-    if result:
-      year_dict['cl'] = basic_sentences[0] + result + sport_sentences[0]
-    for key in cl_all:
-      if int(key.split('/')[1]) == (year - 1) % 100:
-        result = cl_all[key]
-        break
-    if result:
-      year_dict['p_cl'] = basic_sentences[1] + result + sport_sentences[0]
-    for key in cl_all:
-      if int(key.split('/')[1]) == (year + 1) % 100:
-        result = cl_all[key]
-        break
-    if result:
-      year_dict['f_cl'] = basic_sentences[2] + result + sport_sentences[0]
+    try:
+      for key in cl_all:
+        if int(key.split('/')[1]) == year % 100:
+          result = cl_all[key]
+          break
+      if result:
+        year_dict['cl'] = basic_sentences[0] + result + sport_sentences[0]
+      for key in cl_all:
+        if int(key.split('/')[1]) == (year - 1) % 100:
+          result = cl_all[key]
+          break
+      if result:
+        year_dict['p_cl'] = basic_sentences[1] + result + sport_sentences[0]
+      for key in cl_all:
+        if int(key.split('/')[1]) == (year + 1) % 100:
+          result = cl_all[key]
+          break
+      if result:
+        year_dict['f_cl'] = basic_sentences[2] + result + sport_sentences[0]
+    except Exception as e:
+      print('cl',e)    
   # UEFA EURO Football Championship: Create the sentences like (In the same-, the following-, the previous-year)
-    for d in euro_all:
-      if year_s in d:
-        year_dict['euros'] = basic_sentences[0] + euro_all[year_s] + sport_sentences[1]
-    for d in euro_all:
-      t = year - 1
-      year_int = str(t)
-      if year_int in d:
-        year_dict['p_euros'] = basic_sentences[1] + euro_all[year_int] + sport_sentences[1]
-    for d in euro_all:
-      t = year + 1
-      year_int = str(t)
-      if year_int in d:
-        year_dict['f_euros'] = basic_sentences[2] + euro_all[year_int] + sport_sentences[1]
-  # FIFA WORLD Football Championship: Create the sentences like (In the same-, the following-, the previous-year)
-    for d in worlds_all:
-      if year_s in d:
-        year_dict['worlds'] = basic_sentences[0] + worlds_all[year_s] + sport_sentences[2]
-    for d in worlds_all:
-      t = year - 1
-      year_int = str(t)
-      if year_int in d:
-        year_dict['p_worlds'] = basic_sentences[1] + worlds_all[year_int] + sport_sentences[2]
-    for d in worlds_all:
-      t = year + 1
-      year_int = str(t)
-      if year_int in d:
-        year_dict['f_worlds'] = basic_sentences[2] + worlds_all[year_int] + sport_sentences[2]
-  # F1 WORLD Drivers Championship: Create the sentences like (In the same-, the following-, the previous-year)
-    for d in f1_all:
-      if year_s in d:
-        year_dict['f1'] = basic_sentences[0] + f1_all[year_s] + sport_sentences[3]
-    for d in f1_all:
-      t = year - 1
-      year_int = str(t)
-      if year_int in d:
-        year_dict['p_f1'] = basic_sentences[1] + f1_all[year_int] + sport_sentences[3]
-    for d in f1_all:
-      t = year + 1
-      year_int = str(t)
-      if year_int in d:
-        year_dict['f_f1'] = basic_sentences[2] + f1_all[year_int] + sport_sentences[3]
-  # Summer Olympic Games: Create the sentences like (In the same-, the following-, the previous-year)
-    for d in summer_olympics_all:
-      if year_s in d:
-        year_dict['summer'] = olympic_sentences[0] + summer_olympics_all[year_s]
-    for d in summer_olympics_all:
-      t = year - 1
-      year_int = str(t)
-      if year_int in d:
-        year_dict['p_summer'] = olympic_sentences[1] + summer_olympics_all[year_int]
-    for d in summer_olympics_all:
-      t = year + 1
-      year_int = str(t)
-      if year_int in d:
-        year_dict['f_summer'] = olympic_sentences[2] + summer_olympics_all[year_int]
-  # Winter Olympic Games: Create the sentences like (In the same-, the following-, the previous-year)
-    for a,b in winter_olympics_all.items():
-      if str(year) in a:
-        year_dict['winter'] = olympic_sentences[3] + b
-    for a,b in winter_olympics_all.items():
-      t = year - 1
-      year_str = str(t)
-      if year_str in a:
-        year_dict['winter'] = olympic_sentences[4] + b
-    for a,b in winter_olympics_all.items():
-      t = year + 1
-      year_str = str(t)
-      if year_str in a:
-        year_dict['winter'] = olympic_sentences[5] + b
-    #write the entry in the dict
+    try:
+      print('ok')
+      for d in euro_all:
+        if year_s in d:
+          year_dict['euros'] = basic_sentences[0] + euro_all[year_s] + sport_sentences[1]
+      for d in euro_all:
+        t = year - 1
+        year_int = str(t)
+        if year_int in d:
+          year_dict['p_euros'] = basic_sentences[1] + euro_all[year_int] + sport_sentences[1]
+      for d in euro_all:
+        t = year + 1
+        year_int = str(t)
+        if year_int in d:
+          year_dict['f_euros'] = basic_sentences[2] + euro_all[year_int] + sport_sentences[1]
+    except Exception as e:
+      print('euro',e)
+    # FIFA WORLD Football Championship: Create the sentences like (In the same-, the following-, the previous-year)
+    try:
+      for d in worlds_all:
+        if year_s in d:
+          year_dict['worlds'] = basic_sentences[0] + worlds_all[year_s] + sport_sentences[2]
+      for d in worlds_all:
+        t = year - 1
+        year_int = str(t)
+        if year_int in d:
+          year_dict['p_worlds'] = basic_sentences[1] + worlds_all[year_int] + sport_sentences[2]
+      for d in worlds_all:
+        t = year + 1
+        year_int = str(t)
+        if year_int in d:
+          year_dict['f_worlds'] = basic_sentences[2] + worlds_all[year_int] + sport_sentences[2]
+    except Exception as e:
+      print('worlds',e)
+    # F1 WORLD Drivers Championship: Create the sentences like (In the same-, the following-, the previous-year)
+    try:
+      for d in f1_all:
+        if year_s in d:
+          year_dict['f1'] = basic_sentences[0] + f1_all[year_s] + sport_sentences[3]
+      for d in f1_all:
+        t = year - 1
+        year_int = str(t)
+        if year_int in d:
+          year_dict['p_f1'] = basic_sentences[1] + f1_all[year_int] + sport_sentences[3]
+      for d in f1_all:
+        t = year + 1
+        year_int = str(t)
+        if year_int in d:
+          year_dict['f_f1'] = basic_sentences[2] + f1_all[year_int] + sport_sentences[3]
+    except Exception as e:
+      print('f1',e)
+    # Summer Olympic Games: Create the sentences like (In the same-, the following-, the previous-year)
+    try:
+      for d in summer_olympics_all:
+        if year_s in d:
+          year_dict['summer'] = olympic_sentences[0] + summer_olympics_all[year_s]
+      for d in summer_olympics_all:
+        t = year - 1
+        year_int = str(t)
+        if year_int in d:
+          year_dict['p_summer'] = olympic_sentences[1] + summer_olympics_all[year_int]
+      for d in summer_olympics_all:
+        t = year + 1
+        year_int = str(t)
+        if year_int in d:
+          year_dict['f_summer'] = olympic_sentences[2] + summer_olympics_all[year_int]
+    except Exception as e:
+      print('summer',e)
+    # Winter Olympic Games: Create the sentences like (In the same-, the following-, the previous-year)
+    try: 
+      for a,b in winter_olympics_all.items():
+        if str(year) in a:
+          year_dict['winter'] = olympic_sentences[3] + b
+      for a,b in winter_olympics_all.items():
+        t = year - 1
+        year_str = str(t)
+        if year_str in a:
+          year_dict['winter'] = olympic_sentences[4] + b
+      for a,b in winter_olympics_all.items():
+        t = year + 1
+        year_str = str(t)
+        if year_str in a:
+          year_dict['winter'] = olympic_sentences[5] + b
+      #write the entry in the dict
+    except Exception as e:
+      print('winter',e)
+
     pop_sport_hints_year[year] = year_dict
   return pop_sport_hints_year
 
@@ -3754,7 +3777,7 @@ def generate_hints_years(qa_dict):
     'vizgr' : years_hints
   }
 
-  for y in pop_year_hints:
+  for y in qa_dict:
     year_dict= {}
     try:
       if pop_year_hints[y]:
