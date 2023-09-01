@@ -173,18 +173,19 @@ elif selected == "Person question":
             prs_pred = gen_hints['people']['predicates']
             
             for prs, hints in prs_cat.items():
-                st.write(hints)
+                # st.write(hints)
                 # st.write(hints[0])
                 for x,y in hints.items():
-                    st.write(x)
+                    # st.write(x)
                     prin_dat.append(x)
 
             for prs, typ in prs_pred.items():
                 for i, hint in typ.items():
-                    st.write(hint)
-                    for l,m in hint.items():
-                        st.write(l)
-                        prin_dat.append(l)
+                    # st.write(hint)
+                    if isinstance(hint, dict):
+                        for l,m in hint.items():
+                            # st.write(l)
+                            prin_dat.append(l)
             st.write(prin_dat)
             n = {'Hints': prin_dat}
             df = pd.DataFrame(data=n)
