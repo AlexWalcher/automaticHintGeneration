@@ -3404,18 +3404,19 @@ returns a dict with the corresponding sports events from the years in years_list
 def popular_sports_per_year(years_list):
   pop_sport_hints_year = {}
   for index in years_list:
-    try:
-      year = int(index)
-      year_s = str(year)
-      year_dict = {
-          'cl': '', 'p_cl': '', 'f_cl': '',
-          'euros': '', 'p_euros': '', 'f_euros': '',
-          'worlds': '', 'p_worlds': '', 'f_worlds': '',
-          'f1': '', 'p_f1': '', 'f_f1': '',
-          'summer': '', 'p_summer': '', 'f_summer': '',
-          'winter': '', 'p_winter': '', 'f_winter': ''
-      }
+    year = int(index)
+    year_s = str(year)
+    print(year, year_s)
+    year_dict = {
+        'cl': '', 'p_cl': '', 'f_cl': '',
+        'euros': '', 'p_euros': '', 'f_euros': '',
+        'worlds': '', 'p_worlds': '', 'f_worlds': '',
+        'f1': '', 'p_f1': '', 'f_f1': '',
+        'summer': '', 'p_summer': '', 'f_summer': '',
+        'winter': '', 'p_winter': '', 'f_winter': ''
+    }
   # UEFA Champions League: Create the sentences like (In the same-, the following-, the previous-year)
+    try:
       for key in cl_all:
         if int(key.split('/')[1]) == year % 100:
           result = cl_all[key]
@@ -3434,8 +3435,11 @@ def popular_sports_per_year(years_list):
           break
       if result:
         year_dict['f_cl'] = basic_sentences[2] + result + sport_sentences[0]
-    
+    except Exception as e:
+      print('cl',e)    
   # UEFA EURO Football Championship: Create the sentences like (In the same-, the following-, the previous-year)
+    try:
+      print('ok')
       for d in euro_all:
         if year_s in d:
           year_dict['euros'] = basic_sentences[0] + euro_all[year_s] + sport_sentences[1]
@@ -3449,7 +3453,10 @@ def popular_sports_per_year(years_list):
         year_int = str(t)
         if year_int in d:
           year_dict['f_euros'] = basic_sentences[2] + euro_all[year_int] + sport_sentences[1]
+    except Exception as e:
+      print('euro',e)
     # FIFA WORLD Football Championship: Create the sentences like (In the same-, the following-, the previous-year)
+    try:
       for d in worlds_all:
         if year_s in d:
           year_dict['worlds'] = basic_sentences[0] + worlds_all[year_s] + sport_sentences[2]
@@ -3463,7 +3470,10 @@ def popular_sports_per_year(years_list):
         year_int = str(t)
         if year_int in d:
           year_dict['f_worlds'] = basic_sentences[2] + worlds_all[year_int] + sport_sentences[2]
+    except Exception as e:
+      print('worlds',e)
     # F1 WORLD Drivers Championship: Create the sentences like (In the same-, the following-, the previous-year)
+    try:
       for d in f1_all:
         if year_s in d:
           year_dict['f1'] = basic_sentences[0] + f1_all[year_s] + sport_sentences[3]
@@ -3477,7 +3487,10 @@ def popular_sports_per_year(years_list):
         year_int = str(t)
         if year_int in d:
           year_dict['f_f1'] = basic_sentences[2] + f1_all[year_int] + sport_sentences[3]
+    except Exception as e:
+      print('f1',e)
     # Summer Olympic Games: Create the sentences like (In the same-, the following-, the previous-year)
+    try:
       for d in summer_olympics_all:
         if year_s in d:
           year_dict['summer'] = olympic_sentences[0] + summer_olympics_all[year_s]
@@ -3491,7 +3504,10 @@ def popular_sports_per_year(years_list):
         year_int = str(t)
         if year_int in d:
           year_dict['f_summer'] = olympic_sentences[2] + summer_olympics_all[year_int]
+    except Exception as e:
+      print('summer',e)
     # Winter Olympic Games: Create the sentences like (In the same-, the following-, the previous-year)
+    try: 
       for a,b in winter_olympics_all.items():
         if str(year) in a:
           year_dict['winter'] = olympic_sentences[3] + b
@@ -3506,10 +3522,10 @@ def popular_sports_per_year(years_list):
         if year_str in a:
           year_dict['winter'] = olympic_sentences[5] + b
       #write the entry in the dict
-
-      pop_sport_hints_year[year] = year_dict
     except Exception as e:
-      print(e)
+      print('winter',e)
+
+    pop_sport_hints_year[year] = year_dict
   return pop_sport_hints_year
 
 #CALL FUNCTION
