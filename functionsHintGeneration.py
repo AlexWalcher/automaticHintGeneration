@@ -1486,7 +1486,7 @@ countries_list = []
 def prune_and_ordered_dict(dictionary, n):
   pruned_dict = OrderedDict()
   inter1_dict= OrderedDict()
-  # bad_categories_list = ['Living_people', 'Living people', '_births', 'births', '_deaths', 'deaths', 'Good_articles', 'Good articles', 'Members','19th', '20th', '21st', 'Capitals in Europe', 'state capitals']
+  # bad_categories_list = ['Living_people', 'Living people', '_births', 'births', '_deaths', 'deaths', 'Good_articles', 'Good articles', 'Members','19th', '20th', '21st', 'Capitals in Europe', 'state capitals', 'American billionaires']
   bad_categories_list = ['Living_people', 'Living people', '_births', 'births', '_deaths', 'deaths', 'Good_articles', 'Good articles', 'Members','19th', 'Capitals in Europe', 'state capitals', 'Spoken articles', 'People appearing on C-SPAN', 'American billionaires']
   print(dictionary)
   people_occupations = get_occupation_from_wikidata(dictionary)
@@ -2379,7 +2379,8 @@ def get_categories_with_pv_answerEntities(person_questions_dict):
       inter_list.append((key[0], int(key[1].replace(",", ""))))
     intermediate_ordere[a] = OrderedDict(sorted(inter_list, key=lambda x: x[1], reverse=True))
 
-  bad_categories_list = ['Living_people', 'Living people', '_births', 'births', '_deaths', 'deaths', 'Good_articles', 'Good articles', 'Members','19th', 'Capitals in Europe', 'state capitals']
+  bad_categories_list = ['Living_people', 'Living people', '_births', 'births', '_deaths', 'deaths', 'Good_articles', 'Good articles', 'Members','19th', 'Capitals in Europe', 'state capitals', 'Spoken articles', 'People appearing on C-SPAN', 'American billionaires']
+  # bad_categories_list = ['Living_people', 'Living people', '_births', 'births', '_deaths', 'deaths', 'Good_articles', 'Good articles', 'Members','19th', 'Capitals in Europe', 'state capitals']
 
 
   for k,v in intermediate_ordere.items():
