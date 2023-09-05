@@ -62,7 +62,11 @@ from webdrivermanager import GeckoDriverManager
 
 sim_score_priority_words = ['World Cup', 'Champions League', 'occupied', 'Spoken language', 'shares border']
 
-
+"""
+Loads and categorizes data from an Excel file, organizing it into DataFrames and dictionaries for 'Person', 'Year', and 'Location' categories.
+Args: file_path (str): The path to the Excel file to be processed.
+Returns: df_list (dict): A dictionary containing categorized DataFrames for 'Person', 'Year', and 'Location'.
+"""
 def load_file_path(file_path):
   #file_path = "/content/automaticHintGeneration/testSet.xlsx"
   df = pd.ExcelFile(file_path).parse("Sheet1")
@@ -129,13 +133,6 @@ properties_blank_sentences = {
   'work period' :  'The person you are looking for was most active during / and *.'
   }
 
-# # #from years
-# """
-# This sorts the items in the dictionary based on the integer value of the second element in each key-value tuple (i.e. item[1]), in descending order (reverse=True).
-# """
-# def sort_dict_desc(d):
-#   return {k: v for k, v in sorted(d.items(), key=lambda item: int(item[1]), reverse=True)}
-
 # Load pre-trained model and tokenizer
 model_name = 'bert-base-uncased'
 tokenizer = AutoTokenizer.from_pretrained(model_name)
@@ -187,6 +184,11 @@ Given a URL, this function opens the url and retrieves the information stored in
 #       data.append([cell.text.strip() for cell in row.find_all('td')])
 #   return (headers, data)
 
+"""
+Fetches data from Wikidata API using the provided parameters and returns the API response.
+Args: params (dict): A dictionary containing parameters for the Wikidata API request.
+Returns: API Response (requests.Response object): The response object containing data from the Wikidata API.
+"""
 def fetch_wikidata(params):
   url = 'https://www.wikidata.org/w/api.php'
   try:
@@ -194,6 +196,18 @@ def fetch_wikidata(params):
   except:
     return 'There was and error'
 
+"""
+Retrieves occupation information from Wikidata for a list of people and returns a dictionary mapping each person's name to their associated occupations.
+Args: people_list (dict): A dictionary where keys are people's names, and values can be any relevant information (not used in this function).
+Returns: occu_dict (dict): A dictionary where keys are people's names, and values are lists of their associated occupations retrieved from Wikidata.
+Description:
+This function takes a dictionary of people's names as input and performs the following steps for each person:
+1. Retrieves the Wikidata Q-identifier for the person's Wikidata page.
+2. Retrieves the Q-identifiers for the person's occupations.
+3. Retrieves the values (labels) for the corresponding occupation-ids.
+4. Maps each person's name to a list of their associated occupations.
+If any errors occur during the process, they are printed, and the corresponding person's entry in the dictionary will have an empty list of occupations.
+"""
 def get_occupation_from_wikidata(people_list):
   # First we need to retrieve the Q-identifier for the pserons wikidata page
   occu_dict={}
@@ -213,8 +227,6 @@ def get_occupation_from_wikidata(people_list):
       data_person_id = fetch_wikidata(params_person_id)
       data_person_id = data_person_id.json()
       person_wikidata_id = data_person_id['search'][0]['id'] # select first search result ID
-      # print(person_wikidata_id)
-
       # Next we need to retrieve the Q-identifiers for the occupations
       params_occupation_id = {
                   'action': 'wbgetentities',
@@ -224,12 +236,8 @@ def get_occupation_from_wikidata(people_list):
               }
       data_occupation_id = fetch_wikidata(params_occupation_id)
       data_occupation_id = data_occupation_id.json()
-      # print(data_occupation_id['entities'][person_wikidata_id]['claims'])
       occupation_ids_list = data_occupation_id['entities'][person_wikidata_id]['claims']['P106'] #P106 is property id of occupation 
-      # print(occupation_ids_list)
       person_occupations_ids = [v['mainsnak']['datavalue']['value']['id'] for v in occupation_ids_list]
-      # print(person_occupations_ids)
-
       for oc in person_occupations_ids:
         # Next we need to retrieve the value for the corresponding occupation-id
         params_occupation_value = {
@@ -1479,7 +1487,7 @@ def prune_and_ordered_dict(dictionary, n):
   pruned_dict = OrderedDict()
   inter1_dict= OrderedDict()
   # bad_categories_list = ['Living_people', 'Living people', '_births', 'births', '_deaths', 'deaths', 'Good_articles', 'Good articles', 'Members','19th', '20th', '21st', 'Capitals in Europe', 'state capitals']
-  bad_categories_list = ['Living_people', 'Living people', '_births', 'births', '_deaths', 'deaths', 'Good_articles', 'Good articles', 'Members','19th', 'Capitals in Europe', 'state capitals']
+  bad_categories_list = ['Living_people', 'Living people', '_births', 'births', '_deaths', 'deaths', 'Good_articles', 'Good articles', 'Members','19th', 'Capitals in Europe', 'state capitals', 'Spoken articles', 'People appearing on C-SPAN', 'American billionaires']
   print(dictionary)
   people_occupations = get_occupation_from_wikidata(dictionary)
   print("occu", people_occupations)
