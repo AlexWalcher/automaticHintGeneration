@@ -186,13 +186,27 @@ elif selected == "Person question":
 elif selected == "Example usage":
     st.title('The following list contains examples for a better understanding of how to use the app.')
 
-    st.subheader('For singel <question, answer> pairs:')
+    st.subheader('Examples for singel <question, answer> pairs:')
     st.write('Choose the desired type from the Menu on the left: either Year, Person or Location. Then just enter the question with the corresponding answer.' )
-    st.write('Example:')
+
+    st.write('Question 1:')
+    d = {'Question': [ 'Who was 2022 F1 World Drivers champion?'], 'Answer': ['Max Verstappen']}
+    df = pd.DataFrame(data=d)
+    st.table(df)
+    st.write('Generated hints for question 1: ')
+    d = {'Hints': [
+        'The person you are looking for is/was occupied as racing automobile driver, Formula One driver, racing driver and a member of the category Twitch (service) streamers.', 
+        'The person you are looking for, is occupied as racing automobile driver, Formula One driver and racing driver.',
+        'The person you are looking for was born on 30.09.1997 in Hasselt.',
+        'The person you are looking for has won multiple awards in his life, some of them are Talent of the year, Dutch Sportsman of the year and Lorenzo Bandini Trophy.'        ]}
+    df = pd.DataFrame(data=d)
+    st.table(df)
+    
+    st.write('Question 2:')
     d = {'Question': [ 'Who is the owner of the renamed social media platform X?'], 'Answer': ['Elon Musk']}
     df = pd.DataFrame(data=d)
     st.table(df)
-    st.write('Hints: ')
+    st.write('Generated hints for question 2: ')
     d = {'Hints': [
         'The person you are looking for has won multiple awards in his life, some of them are Honorary degree, honorary doctorate and Fellow of the Royal Society.', 
         'The person you are looking for is/was an employee at the following companies: PayPal, SpaceX and Tesla, Inc..',
@@ -204,13 +218,12 @@ elif selected == "Example usage":
     df = pd.DataFrame(data=d)
     st.table(df)
 
-
     st.subheader('For multiple <question, answer> pairs:')
     st.write('Choose the Upload file page from the Menu on the left.' )
     st.write('The uploaded file should be a Excel (xlsx) file and must contain a Question, Answer and Category cell in the first row of the file.' )
     st.write('Example file:')
 
-    d = {'Question': [ 'Who was the 2022 F1 World Drivers champion?', 'What year was last year?', 'What is the capital of Austria?'], 'Answer': ['Max Verstappen', 2022, 'Vienna'], 'Category': ['person', 'year', 'location']}
+    d = {'Question': [ 'Who was the 2022 F1 World Drivers champion?', 'When was the University of Innsbruck founded?', 'What is the capital of Austria?'], 'Answer': ['Max Verstappen', 1669, 'Vienna'], 'Category': ['person', 'year', 'location']}
     df = pd.DataFrame(data=d)
     st.table(df)
 
