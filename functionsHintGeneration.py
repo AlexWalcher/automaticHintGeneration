@@ -1410,11 +1410,11 @@ def get_pageviews_for_categories(cat_dict):
     # ordered_categories_with_pageviews = sort_dict_desc(categories_with_pageviews) #now the list is ordered in ascending order
     try:
       sor = dict(sorted(pvs.items(), key=lambda x: int(x[1].replace(',', '')),reverse = True))
-    except Exception as e: 
-      print(e)
     # print(sor)
 
-    all_cats_with_pvs[subject] = OrderedDict(sor)
+      all_cats_with_pvs[subject] = OrderedDict(sor)
+    except Exception as e: 
+      print(e)
 
   return all_cats_with_pvs
 
