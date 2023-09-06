@@ -62,6 +62,7 @@ elif selected == "Upload file":
         st.table(df)
         # st.write(gen_hints)
 
+    st.divider()
     st.write('Example Question:')    
     st.write('The uploaded file should be a Excel (xlsx) file and must contain a Question, Answer and Category cell in the first row of the file.' )
     st.write('Example file:')
@@ -112,6 +113,7 @@ elif selected == "Year question":
             df = pd.DataFrame(data=n)
             st.table(df)
 
+    st.divider()
     st.write('Example Question:')
     d = {'Question': [ 'In what year was the first -Lord of the Rings- book published?'], 'Answer': ['1954']}
     df = pd.DataFrame(data=d)
@@ -164,6 +166,7 @@ elif selected == "Location question":
             except Exception as e:
                 st.write(gen_hints)
     
+    st.divider()
     st.write('Example Question:')
     d = {'Question': [ 'General Franco became leader of which country in 1939 after a Civil War?'], 'Answer': ['Spain']}
     df = pd.DataFrame(data=d)
@@ -219,6 +222,7 @@ elif selected == "Person question":
             df = pd.DataFrame(data=n)
             st.table(df)
     
+    st.divider()
     st.write('Example Question:')
     d = {'Question': [ 'Who is the owner of the renamed social media platform X?'], 'Answer': ['Elon Musk']}
     df = pd.DataFrame(data=d)
@@ -242,6 +246,7 @@ elif selected == "Example usage":
     st.subheader('Examples for singel <question, answer> pairs:')
     st.write('Choose the desired type from the Menu on the left: either Year, Person or Location. Then just enter the question with the corresponding answer.' )
 
+    st.divider()
     st.write('Question 1:')
     d = {'Question': [ 'Who was 2022 F1 World Drivers champion?'], 'Answer': ['Max Verstappen']}
     df = pd.DataFrame(data=d)
@@ -255,6 +260,7 @@ elif selected == "Example usage":
     df = pd.DataFrame(data=d)
     st.table(df)
     
+    st.divider()
     st.write('Question 2:')
     d = {'Question': [ 'Who is the owner of the renamed social media platform X?'], 'Answer': ['Elon Musk']}
     df = pd.DataFrame(data=d)
