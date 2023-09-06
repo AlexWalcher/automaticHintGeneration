@@ -227,6 +227,7 @@ def get_occupation_from_wikidata(people_list):
       data_person_id = fetch_wikidata(params_person_id)
       data_person_id = data_person_id.json()
       person_wikidata_id = data_person_id['search'][0]['id'] # select first search result ID
+
       # Next we need to retrieve the Q-identifiers for the occupations
       params_occupation_id = {
                   'action': 'wbgetentities',
@@ -1487,7 +1488,7 @@ def prune_and_ordered_dict(dictionary, n):
   pruned_dict = OrderedDict()
   inter1_dict= OrderedDict()
   # bad_categories_list = ['Living_people', 'Living people', '_births', 'births', '_deaths', 'deaths', 'Good_articles', 'Good articles', 'Members','19th', '20th', '21st', 'Capitals in Europe', 'state capitals', 'American billionaires']
-  bad_categories_list = ['Living_people', 'Living people', '_births', 'births', '_deaths', 'deaths', 'Good_articles', 'Good articles', 'Members','19th', 'Capitals in Europe', 'state capitals', 'Spoken articles', 'People appearing on C-SPAN', 'American billionaires']
+  bad_categories_list = ['Living_people', 'Living people', '_births', 'births', '_deaths', 'deaths', 'Good_articles', 'Good articles', 'Members','19th', 'Capitals in Europe', 'state capitals', 'Spoken articles', 'Spoken_articles', 'People_appearing_on_C-SPAN', 'American_billionaires']
   print(dictionary)
   people_occupations = get_occupation_from_wikidata(dictionary)
   print("occu", people_occupations)
@@ -2379,7 +2380,7 @@ def get_categories_with_pv_answerEntities(person_questions_dict):
       inter_list.append((key[0], int(key[1].replace(",", ""))))
     intermediate_ordere[a] = OrderedDict(sorted(inter_list, key=lambda x: x[1], reverse=True))
 
-  bad_categories_list = ['Living_people', 'Living people', '_births', 'births', '_deaths', 'deaths', 'Good_articles', 'Good articles', 'Members','19th', 'Capitals in Europe', 'state capitals', 'Spoken articles', 'People appearing on C-SPAN', 'American billionaires']
+  bad_categories_list = ['Living_people', 'Living people', '_births', 'births', '_deaths', 'deaths', 'Good_articles', 'Good articles', 'Members','19th', 'Capitals in Europe', 'state capitals', 'Spoken articles', 'Spoken_articles', 'People_appearing_on_C-SPAN', 'American_billionaires']
   # bad_categories_list = ['Living_people', 'Living people', '_births', 'births', '_deaths', 'deaths', 'Good_articles', 'Good articles', 'Members','19th', 'Capitals in Europe', 'state capitals']
 
 
@@ -2402,8 +2403,9 @@ def get_categories_with_pv_answerEntities(person_questions_dict):
 
 
 def order_dict_by_second_entry(data):
-    ordered_data = {}
-    intermediate_dict = {}
+  ordered_data = {}
+  intermediate_dict = {}
+  try:
     for a,b in data.items():
       intermediate_ordere = {}
       for key, value in b.items():
@@ -2413,7 +2415,9 @@ def order_dict_by_second_entry(data):
         intermediate_ordere[key] = sorted(inter_list, key=lambda x: x[1], reverse=True)
 
       intermediate_dict[a] = intermediate_ordere
-    return intermediate_dict
+  except Exception as e:
+    print(e)
+  return intermediate_dict
 
 
 
