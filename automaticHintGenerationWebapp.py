@@ -62,6 +62,15 @@ elif selected == "Upload file":
         st.table(df)
         # st.write(gen_hints)
 
+    st.write('Example Question:')    
+    st.write('The uploaded file should be a Excel (xlsx) file and must contain a Question, Answer and Category cell in the first row of the file.' )
+    st.write('Example file:')
+
+    d = {'Question': [ 'Who was the 2022 F1 World Drivers champion?', 'When was the University of Innsbruck founded?', 'What is the capital of Austria?'], 'Answer': ['Max Verstappen', 1669, 'Vienna'], 'Category': ['person', 'year', 'location']}
+    df = pd.DataFrame(data=d)
+    st.table(df)
+
+
 
 elif selected == "Year question":
     st.header('Enter the years-question with the answer and wait for the corresponding hint to be generated.')
@@ -103,6 +112,20 @@ elif selected == "Year question":
             df = pd.DataFrame(data=n)
             st.table(df)
 
+    st.write('Example Question:')
+    d = {'Question': [ 'In what year was the first -Lord of the Rings- book published?'], 'Answer': ['1954']}
+    df = pd.DataFrame(data=d)
+    st.table(df)
+    st.write('Generated hints for example question: ')
+    d = {'Hints': [
+        'In the same year, West Germany has won the FIFA World Cup.', 
+        'In the same year, July 4 the FIFA World Cup is held in Switzerland.',
+        'In the same year, west Germany beats Hungary 3–2 to win the FIFA World Cup.',
+        "In the same year, william Golding's novel ''Lord of the Flies'' is published in London.",
+        'In the same year, the Boeing 707 is released after about two years of development.']}
+    df = pd.DataFrame(data=d)
+    st.table(df)
+
 
 elif selected == "Location question":
     st.header('Enter the location-question with the answer and wait for the corresponding hint to be generated.')
@@ -140,6 +163,20 @@ elif selected == "Location question":
                 st.table(df)
             except Exception as e:
                 st.write(gen_hints)
+    
+    st.write('Example Question:')
+    d = {'Question': [ 'General Franco became leader of which country in 1939 after a Civil War?'], 'Answer': ['Spain']}
+    df = pd.DataFrame(data=d)
+    st.table(df)
+    st.write('Generated hints for example question: ')
+    d = {'Hints': [
+        'Head of government of searched location is Pedro Sánchez.', 
+        'The highest point in searched location is Teide.',
+        'Some of the next bodies of water of searched location are Cantabrian Sea, Alboran Sea, Atlantic Ocean.',
+        "The searched location shares border with France, Arab League, Mauritania.",
+        'The capital of searched location is  Madrid.']}
+    df = pd.DataFrame(data=d)
+    st.table(df)
 
 elif selected == "Person question":
     st.header('Enter the person-question with the answer and wait for the corresponding hint to be generated.')
@@ -181,6 +218,22 @@ elif selected == "Person question":
             n = {'Hints': prin_dat}
             df = pd.DataFrame(data=n)
             st.table(df)
+    
+    st.write('Example Question:')
+    d = {'Question': [ 'Who is the owner of the renamed social media platform X?'], 'Answer': ['Elon Musk']}
+    df = pd.DataFrame(data=d)
+    st.table(df)
+    st.write('Generated hints for example question: ')
+    d = {'Hints': [
+        'The person you are looking for has won multiple awards in his life, some of them are Honorary degree, honorary doctorate and Fellow of the Royal Society.', 
+        'The person you are looking for is/was an employee at the following companies: PayPal, SpaceX and Tesla, Inc..',
+        'The person you are looking for, is occupied as programmer, engineer and entrepreneur.',
+        "The person you are looking for is/was the owner of: Tesla, Inc., X.com and Elon Musk's Tesla Roadster.",
+        'The person you are looking for is holding/has held the following positions as an eployee: chief executive officer, chief technology officer and chairperson.',
+        'The person you are looking for, has 3 children and 3 siblings.',
+        'The person you are looking for was born on 28.06.1971 in Pretoria.']}
+    df = pd.DataFrame(data=d)
+    st.table(df)
 
     
 elif selected == "Example usage":
