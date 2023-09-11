@@ -2742,6 +2742,15 @@ def create_hint_sentences_predicates(properties_person_name_dict, properties_bla
       for proper, entries in value.items():
         if proper in properties_blank_sentences:
           if type(entries) != dict:
+            for e in entries:
+              if pers_name in e:
+                entries.remove(e)
+                print('removed', e)
+              else:
+                names = pers_name.split()
+                if names[1] in e:
+                  entries.remove(e)
+                  print('removed', e)
             if len(entries) >= 3: #when we want to list 3 items
               first_two = entries[:2]
               intermediate_str = ', '.join(first_two)
