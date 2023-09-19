@@ -1,7 +1,5 @@
 # Automatic hint generation using Wikipedia
 
-**Ongoing project: At the moment the program is extended and updated constantly.**
-
 This project is part of my ongoing **Bachelor Thesis** at the **University of Innsbruck**:
 [*Adam Jatowt and Alex Walcher: Automatic hint generation using Wikipedia*](https://ds-informatik.uibk.ac.at/doku.php?id=current_topics)
 
@@ -21,4 +19,3 @@ This program can handle three general types of questions:
 ### **Limitations:**
 It does achieve this by retrieving data from Wikidata and Wikipedia, therefor the answer to the question should always be a Wikipedia-entity.
 
-This project will be extended and optimized by me during my Bachelor Thesis in colaboration with Univ.-Prof. Adam Jatowt, PhD as supervisor.
