@@ -287,3 +287,25 @@ elif selected == "Example usage":
     st.table(df)
 
     st.write('After the calculation, the hints can be downloaded as a Excel file and are printed on the webpage as well.')
+    
+    st.divider()
+    st.subheader('Example lists:')
+
+    st.write('The following is an example list of fixed predicates, used to create hint-sentences for location questions:' )
+
+    d = {'Predicates used for location-questions:': [ 
+        'highest_point', 'head_of_government', 'country', 'continent', 'head_of_state', 'capital',
+        'currency', 'located_on', 'population', 'city_is_capital_of', 'share_border', 'languages', 'body_of_water', 
+        'time_zone', 'member_of', 'significant_event', 'owner_of']}
+    df = pd.DataFrame(data=d)
+    st.table(df)
+    
+    st.divider()
+    st.write('The following is an example list of popular events, used to create hint-sentences for years questions:' )
+
+    d = {'Popular sports events used for years-questions:': [ 
+       'Summer Olympics', 'Winter Olympics', 'World Cup', 'European Cup', 'Formula 1', 'Champions League' ]} 
+    df = pd.DataFrame(data=d)
+    st.table(df)
+
+
