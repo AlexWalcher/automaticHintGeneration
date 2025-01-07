@@ -1,6 +1,6 @@
 # Automatic hint generation using Wikipedia
 
-This project is part of my ongoing **Bachelor Thesis** at the **University of Innsbruck**:
+This project is part of my **Bachelor Thesis** at the **University of Innsbruck**:
 [*Adam Jatowt and Alex Walcher: Automatic hint generation using Wikipedia*](https://ds-informatik.uibk.ac.at/doku.php?id=current_topics)
 
 ### **How to use the WebApp on Streamlit-Cloud:**
